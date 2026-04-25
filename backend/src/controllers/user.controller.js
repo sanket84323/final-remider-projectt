@@ -44,8 +44,29 @@ const getAllUsers = async (req, res) => {
     }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    // ─── Auto-assign random class to students without one ───────────────────
+    if (role === 'student') {
+      const Department = require('../models/Department');
+      const aidsDept = await Department.findOne({ code: /AIDS/i });
+      if (aidsDept && aidsDept.classes && aidsDept.classes.length > 0) {
+        const studentsWithoutClass = await User.find({ 
+          role: 'student', 
+          $or: [{ className: { $exists: false } }, { className: '' }, { className: null }]
+        });
+        
+        for (const student of studentsWithoutClass) {
+          const randomClass = aidsDept.classes[Math.floor(Math.random() * aidsDept.classes.length)];
+          student.className = randomClass;
+          await student.save();
+        }
+      }
+    }
+
+    const sortOption = role === 'student' ? { className: 1, name: 1 } : { createdAt: -1 };
+
     const [users, total] = await Promise.all([
-      User.find(filter).populate('department', 'name code').skip(skip).limit(parseInt(limit)).sort({ createdAt: -1 }),
+      User.find(filter).populate('department', 'name code').skip(skip).limit(parseInt(limit)).sort(sortOption),
       User.countDocuments(filter),
     ]);
 

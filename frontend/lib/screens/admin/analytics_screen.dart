@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:fl_chart/fl_chart.dart';
 import '../../core/constants/app_constants.dart';
 import '../../data/services/api_service.dart';
 
@@ -16,46 +15,55 @@ class AnalyticsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final analyticsAsync = ref.watch(_analyticsProvider);
+
     return Scaffold(
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        title: const Text('Analytics'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => context.pop()),
-        actions: [IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: () => ref.invalidate(_analyticsProvider))],
+        title: const Text('Campus Insights', style: TextStyle(fontWeight: FontWeight.w800, fontFamily: 'Inter')),
+        actions: [
+          IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: () => ref.refresh(_analyticsProvider)),
+        ],
       ),
       body: analyticsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
-        data: (data) => ListView(
-          padding: const EdgeInsets.all(AppDimens.paddingMd),
-          children: [
-            // ─── Summary Tiles ──────────────────────────────────────────
-            Row(
-              children: [
-                Expanded(child: _SummaryTile(label: 'Total Users', value: '${data['totalUsers'] ?? 0}', icon: Icons.people_outline, color: AppColors.primary)),
-                const SizedBox(width: 12),
-                Expanded(child: _SummaryTile(label: 'Total Notices', value: '${data['totalReminders'] ?? 0}', icon: Icons.campaign_outlined, color: AppColors.accent)),
-              ],
-            ),
-            const SizedBox(height: 16),
-            // ─── Notification Read Rate Pie ─────────────────────────────
-            _ChartCard(
-              title: 'Engagement: Read vs Unread',
-              child: _ReadRatePie(data: data['notificationReadRate'] as List? ?? []),
-            ),
-            const SizedBox(height: 16),
-            // ─── Reminders by Priority ──────────────────────────────────
-            _ChartCard(
-              title: 'Distribution by Priority',
-              child: _PriorityBar(data: data['remindersByPriority'] as List? ?? []),
-            ),
-            const SizedBox(height: 16),
-            // ─── Top Active Teachers ────────────────────────────────────
-            _ChartCard(
-              title: 'Most Active Teachers',
-              child: _TeacherList(data: data['topActiveTeachers'] as List? ?? []),
-            ),
-          ],
-        ),
+        data: (data) {
+          return ListView(
+            padding: const EdgeInsets.all(AppDimens.paddingMd),
+            children: [
+              // ─── Top Row: Leaderboard ───────────────────────────────────
+              _ChartCard(
+                title: 'Class Leaderboard',
+                subtitle: 'Classes ranked by overall student activity points.',
+                child: _ClassLeaderboard(data: data['studentActivityByClass'] as List? ?? []),
+              ),
+              const SizedBox(height: 20),
+
+              // ─── Submission Progress ─────────────────────────────────────
+              _ChartCard(
+                title: 'Submission Progress',
+                subtitle: 'Submissions vs Teacher Approvals across classes.',
+                child: _AssignmentStatsList(data: data['assignmentStatsByClass'] as List? ?? []),
+              ),
+              const SizedBox(height: 20),
+
+              // ─── Communication ──────────────────────────────────────────
+              _ChartCard(
+                title: 'Communication Success',
+                subtitle: 'Percentage of notices actually read by students.',
+                child: _NoticeReadRate(data: data['noticeReadRates'] as List? ?? []),
+              ),
+              const SizedBox(height: 20),
+
+              // ─── Top Contributors ───────────────────────────────────────
+              _ChartCard(
+                title: 'Top Contributors',
+                subtitle: 'Teachers most active in publishing academic content.',
+                child: _TeacherList(data: data['topTeachers'] as List? ?? []),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -63,121 +71,101 @@ class AnalyticsScreen extends ConsumerWidget {
 
 class _ChartCard extends StatelessWidget {
   final String title;
+  final String subtitle;
   final Widget child;
-  const _ChartCard({required this.title, required this.child});
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(AppDimens.radiusLg), border: Border.all(color: AppColors.divider), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)]),
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, fontFamily: 'Inter', color: AppColors.textPrimary)),
-      const SizedBox(height: 20),
-      child,
-    ]),
-  );
-}
-
-class _SummaryTile extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-  const _SummaryTile({required this.label, required this.value, required this.icon, required this.color});
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(color: color.withOpacity(0.05), borderRadius: BorderRadius.circular(AppDimens.radiusLg), border: Border.all(color: color.withOpacity(0.1))),
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Icon(icon, color: color, size: 20),
-      const SizedBox(height: 12),
-      Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: color, fontFamily: 'Inter')),
-      Text(label, style: TextStyle(fontSize: 12, color: color.withOpacity(0.8), fontWeight: FontWeight.w500, fontFamily: 'Inter')),
-    ]),
-  );
-}
-
-class _ReadRatePie extends StatelessWidget {
-  final List<dynamic> data;
-  const _ReadRatePie({required this.data});
+  const _ChartCard({required this.title, required this.subtitle, required this.child});
 
   @override
   Widget build(BuildContext context) {
-    int read = 0, unread = 0;
-    for (final item in data) {
-      if (item['_id'] == true) read = item['count'] ?? 0;
-      else unread = item['count'] ?? 0;
-    }
-    final total = read + unread;
-    if (total == 0) return const Center(child: Text('No data', style: TextStyle(color: AppColors.textHint, fontFamily: 'Inter')));
-
-    return SizedBox(
-      height: 180,
-      child: Row(children: [
-        Expanded(
-          child: PieChart(PieChartData(
-            sections: [
-              PieChartSectionData(value: read.toDouble(), color: AppColors.success, title: '${(read / total * 100).toStringAsFixed(0)}%', titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'Inter')),
-              PieChartSectionData(value: unread.toDouble(), color: AppColors.divider, title: '${(unread / total * 100).toStringAsFixed(0)}%', titleStyle: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold, fontFamily: 'Inter')),
-            ],
-            centerSpaceRadius: 40,
-          )),
-        ),
-        Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          _Legend(color: AppColors.success, label: 'Read: $read'),
-          const SizedBox(height: 8),
-          _Legend(color: AppColors.divider, label: 'Unread: $unread'),
-        ]),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppDimens.radiusLg),
+        boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary, fontFamily: 'Inter')),
+        const SizedBox(height: 4),
+        Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textHint, fontFamily: 'Inter')),
+        const SizedBox(height: 20),
+        child,
       ]),
     );
   }
 }
 
-class _Legend extends StatelessWidget {
-  final Color color;
-  final String label;
-  const _Legend({required this.color, required this.label});
-  @override
-  Widget build(BuildContext context) => Row(children: [
-    Container(width: 12, height: 12, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3))),
-    const SizedBox(width: 8),
-    Text(label, style: const TextStyle(fontSize: 13, fontFamily: 'Inter')),
-  ]);
-}
-
-class _PriorityBar extends StatelessWidget {
+class _NoticeReadRate extends StatelessWidget {
   final List<dynamic> data;
-  const _PriorityBar({required this.data});
+  const _NoticeReadRate({required this.data});
 
   @override
   Widget build(BuildContext context) {
-    final priorities = {'normal': 0, 'important': 0, 'urgent': 0};
-    for (final item in data) {
-      priorities[item['_id']] = item['count'] ?? 0;
-    }
-    final maxVal = priorities.values.reduce((a, b) => a > b ? a : b).toDouble();
+    if (data.isEmpty) return const Center(child: Text('Not enough data', style: TextStyle(color: AppColors.textHint, fontFamily: 'Inter')));
+    return Column(children: data.map((item) {
+      final rate = (item['readRate'] as num).toDouble() / 100.0;
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text(item['_id'] ?? 'General', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, fontFamily: 'Inter')),
+            Text('${item['readRate']}%', style: const TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w700, fontFamily: 'Inter')),
+          ]),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: rate,
+              backgroundColor: AppColors.primaryContainer,
+              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+              minHeight: 6,
+            ),
+          ),
+        ]),
+      );
+    }).toList());
+  }
+}
 
-    return SizedBox(
-      height: 140,
-      child: BarChart(BarChartData(
-        maxY: maxVal > 0 ? maxVal * 1.2 : 10,
-        barGroups: [
-          BarChartGroupData(x: 0, barRods: [BarChartRodData(toY: priorities['normal']!.toDouble(), color: AppColors.primary, width: 32, borderRadius: const BorderRadius.vertical(top: Radius.circular(4)))]),
-          BarChartGroupData(x: 1, barRods: [BarChartRodData(toY: priorities['important']!.toDouble(), color: AppColors.accent, width: 32, borderRadius: const BorderRadius.vertical(top: Radius.circular(4)))]),
-          BarChartGroupData(x: 2, barRods: [BarChartRodData(toY: priorities['urgent']!.toDouble(), color: AppColors.error, width: 32, borderRadius: const BorderRadius.vertical(top: Radius.circular(4)))]),
-        ],
-        titlesData: FlTitlesData(
-          bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (v, _) {
-            final labels = ['Normal', 'Important', 'Urgent'];
-            return Text(labels[v.toInt()], style: const TextStyle(fontSize: 10, fontFamily: 'Inter', color: AppColors.textHint));
-          })),
-          leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 30, getTitlesWidget: (v, _) => Text('${v.toInt()}', style: const TextStyle(fontSize: 10, fontFamily: 'Inter', color: AppColors.textHint)))),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+class _AssignmentStatsList extends StatelessWidget {
+  final List<dynamic> data;
+  const _AssignmentStatsList({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    if (data.isEmpty) return const SizedBox(height: 100, child: Center(child: Text('No submission data yet', style: TextStyle(color: AppColors.textHint, fontFamily: 'Inter'))));
+
+    return Column(children: data.map((item) {
+      final className = item['_id'] as String? ?? 'Other';
+      final submitted = item['submitted'] as int;
+      final approved = item['approved'] as int;
+
+      return InkWell(
+        onTap: () => context.push('/admin-class-analytics/${Uri.encodeComponent(className)}'),
+        borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Text(className, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, fontFamily: 'Inter')),
+              Text('$submitted submitted • $approved approved', style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, fontFamily: 'Inter')),
+            ]),
+            const SizedBox(height: 6),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: SizedBox(
+                height: 8,
+                child: LinearProgressIndicator(
+                  value: submitted > 0 ? approved / submitted : 0,
+                  backgroundColor: AppColors.divider.withOpacity(0.5),
+                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.success),
+                ),
+              ),
+            ),
+          ]),
         ),
-        gridData: const FlGridData(drawVerticalLine: false),
-        borderData: FlBorderData(show: false),
-      )),
-    );
+      );
+    }).toList());
   }
 }
 
@@ -200,5 +188,62 @@ class _TeacherList extends StatelessWidget {
         ),
       ]),
     )).toList());
+  }
+}
+
+class _ClassLeaderboard extends StatelessWidget {
+  final List<dynamic> data;
+  const _ClassLeaderboard({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    final List<dynamic> fullList = data.map((e) => {
+      'name': e['_id'] as String? ?? 'Other',
+      'count': (e['count'] as num).toInt(),
+    }).toList();
+    fullList.sort((a, b) => (b['count'] as int).compareTo(a['count'] as int));
+
+    if (fullList.isEmpty) {
+      return const SizedBox(height: 100, child: Center(child: Text('Awaiting first interactions...', style: TextStyle(color: AppColors.textHint, fontFamily: 'Inter'))));
+    }
+
+    return Column(children: fullList.asMap().entries.map((entry) {
+      final idx = entry.key;
+      final item = entry.value;
+      final name = item['name'] as String;
+      final count = item['count'] as int;
+
+      Color rankColor = AppColors.textSecondary;
+      IconData? rankIcon;
+      if (idx == 0 && count > 0) { rankColor = const Color(0xFFFFD700); rankIcon = Icons.emoji_events_rounded; }
+      else if (idx == 1 && count > 0) { rankColor = const Color(0xFFC0C0C0); rankIcon = Icons.emoji_events_rounded; }
+      else if (idx == 2 && count > 0) { rankColor = const Color(0xFFCD7F32); rankIcon = Icons.emoji_events_rounded; }
+
+      return Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: idx < 3 && count > 0 ? rankColor.withOpacity(0.05) : Colors.transparent,
+          borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+          border: Border.all(color: idx < 3 && count > 0 ? rankColor.withOpacity(0.2) : Colors.transparent),
+        ),
+        child: Row(children: [
+          Container(
+            width: 28,
+            height: 28,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: idx < 3 && count > 0 ? rankColor : AppColors.divider.withOpacity(0.3),
+              shape: BoxShape.circle,
+            ),
+            child: Text('${idx + 1}', style: TextStyle(color: idx < 3 && count > 0 ? Colors.white : AppColors.textSecondary, fontWeight: FontWeight.bold, fontSize: 12)),
+          ),
+          const SizedBox(width: 16),
+          Expanded(child: Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, fontFamily: 'Inter'))),
+          if (rankIcon != null) Padding(padding: const EdgeInsets.only(right: 12), child: Icon(rankIcon, color: rankColor, size: 20)),
+          Text('$count pts', style: TextStyle(fontWeight: FontWeight.w800, color: idx < 3 && count > 0 ? rankColor : AppColors.textHint, fontSize: 13)),
+        ]),
+      );
+    }).toList());
   }
 }

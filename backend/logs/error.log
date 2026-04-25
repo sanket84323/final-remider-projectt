@@ -79,3 +79,29 @@ SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 
 [2026-04-26 02:29:39] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
 [2026-04-26 02:44:30] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
 [2026-04-26 02:57:39] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 02:59:15] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 03:11:25] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 03:11:32] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 03:13:58] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 03:14:04] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 03:17:30] [31merror[39m: Scheduler error (scheduled reminders): getaddrinfo ENOTFOUND ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 03:18:30] [31merror[39m: Scheduler error (scheduled reminders): getaddrinfo ENOTFOUND ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 03:19:30] [31merror[39m: Scheduler error (scheduled reminders): getaddrinfo ENOTFOUND ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 03:21:30] [31merror[39m: Scheduler error (scheduled reminders): getaddrinfo ENOTFOUND ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 03:25:48] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 03:25:54] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 03:30:21] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 03:34:18] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 03:35:53] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 03:35:59] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 03:39:33] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 03:39:38] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 03:51:51] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 03:52:25] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 03:52:36] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 04:01:48] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 04:05:04] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 04:06:31] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 04:15:06] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 04:15:23] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 04:32:33] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.

@@ -11,7 +11,7 @@ import '../../screens/student/student_shell.dart';
 import '../../screens/student/student_dashboard.dart';
 import '../../screens/student/notification_list_screen.dart';
 import '../../screens/student/reminder_detail_screen.dart';
-import '../../screens/student/assignment_detail_screen.dart';
+
 import '../../screens/student/calendar_screen.dart';
 import '../../screens/student/profile_screen.dart';
 import '../../screens/student/settings_screen.dart';
@@ -30,6 +30,11 @@ import '../../screens/admin/user_management_screen.dart';
 import '../../screens/admin/department_management_screen.dart';
 import '../../screens/admin/announcement_screen.dart';
 import '../../screens/admin/analytics_screen.dart';
+import '../../screens/admin/class_assignment_detail_screen.dart';
+import '../../screens/admin/class_management_screen.dart';
+import '../../screens/admin/student_detail_screen.dart';
+import '../../screens/shared/assignment_detail_screen.dart';
+import '../../screens/admin/teacher_detail_screen.dart';
 
 final _rootNavigatorKey    = GlobalKey<NavigatorState>();
 final _studentTab0NavKey   = GlobalKey<NavigatorState>();
@@ -191,6 +196,31 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (_, s) => ReadReceiptsScreen(reminderId: s.pathParameters['id']!),
       ),
+      GoRoute(
+        path: '/admin-class-analytics/:className',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, s) => ClassAssignmentDetailScreen(className: s.pathParameters['className']!),
+      ),
+      GoRoute(
+        path: '/admin-classes',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const ClassManagementScreen(),
+      ),
+      GoRoute(
+        path: '/admin-student-analytics/:id',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, s) => StudentDetailScreen(studentId: s.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/assignment-detail/:id',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, s) => AssignmentDetailScreen(assignmentId: s.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/admin-teacher-analytics/:id',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, s) => TeacherDetailScreen(teacherId: s.pathParameters['id']!),
+      ),
 
       // ─── Admin Shell (4 tabs: Dashboard | Users | Analytics | Announce) ─
       StatefulShellRoute.indexedStack(
@@ -202,9 +232,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             GoRoute(
               path: '/admin',
               builder: (_, __) => const AdminDashboard(),
-              routes: [
-                GoRoute(path: 'departments', builder: (_, __) => const DepartmentManagementScreen()),
-              ],
             ),
           ]),
           // Tab 1 – Users

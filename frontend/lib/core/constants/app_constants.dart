@@ -56,9 +56,9 @@ class AppStrings {
   }
 
   static const List<String> studentClasses = [
-    'SE A', 'SE B', 'SE C',
-    'TE A', 'TE B', 'TE C',
-    'Other'
+    'AIDS SE A', 'AIDS SE B', 'AIDS SE C',
+    'AIDS TE A', 'AIDS TE B', 'AIDS TE C',
+    'AIDS BE A', 'AIDS BE B', 'AIDS BE C'
   ];
 
   static const String defaultDepartment = 'AIDS';
