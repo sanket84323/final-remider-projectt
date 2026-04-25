@@ -65,13 +65,14 @@ class ReminderModel {
   final UserModel? createdBy;
   final List<AttachmentModel> attachments;
   final int? readCount;
+  final bool isRead;
 
   const ReminderModel({
     required this.id, required this.title, required this.description,
     required this.priority, required this.category, required this.status,
     required this.isPinned, required this.tags, required this.createdAt,
     this.scheduledAt, this.deadlineAt, this.createdBy,
-    this.attachments = const [], this.readCount,
+    this.attachments = const [], this.readCount, this.isRead = false,
   });
 
   factory ReminderModel.fromJson(Map<String, dynamic> json) {
@@ -90,6 +91,7 @@ class ReminderModel {
       createdBy: json['createdBy'] is Map<String, dynamic> ? UserModel.fromJson(json['createdBy']) : null,
       attachments: (json['attachments'] as List?)?.map((a) => AttachmentModel.fromJson(a)).toList() ?? [],
       readCount: json['readCount'],
+      isRead: json['isRead'] ?? false,
     );
   }
 }

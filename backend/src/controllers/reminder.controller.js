@@ -111,7 +111,23 @@ const getReminders = async (req, res) => {
       Reminder.countDocuments(filter),
     ]);
 
-    return paginatedResponse(res, reminders, total, page, limit);
+    // If student, check read receipts for each reminder
+    let remindersWithReadStatus = reminders;
+    if (user.role === 'student') {
+      const reminderIds = reminders.map(r => r._id);
+      const readReceipts = await ReadReceipt.find({
+        reminderId: { $in: reminderIds },
+        userId: user._id
+      });
+      const readReminderIds = new Set(readReceipts.map(rr => rr.reminderId.toString()));
+      
+      remindersWithReadStatus = reminders.map(r => ({
+        ...r.toObject(),
+        isRead: readReminderIds.has(r._id.toString())
+      }));
+    }
+
+    return paginatedResponse(res, remindersWithReadStatus, total, page, limit);
   } catch (error) {
     return errorResponse(res, error.message, 500);
   }

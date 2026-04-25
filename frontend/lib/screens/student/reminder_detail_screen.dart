@@ -7,6 +7,7 @@ import '../../core/constants/app_constants.dart';
 import '../../data/repositories/repositories.dart';
 import '../../data/models/models.dart';
 import '../../widgets/app_widgets.dart';
+import '../../providers/app_providers.dart';
 
 final _reminderDetailProvider = FutureProvider.family<ReminderModel, String>((ref, id) async {
   return ReminderRepository().getReminderById(id);
@@ -115,6 +116,10 @@ class _ReminderDetailView extends StatelessWidget {
             ...reminder.attachments.map((a) => _AttachmentTile(attachment: a)),
           ],
 
+          const SizedBox(height: 32),
+          
+          _MarkAsReadButton(reminder: reminder),
+
           const SizedBox(height: 40),
         ],
       ),
@@ -192,6 +197,81 @@ class _AttachmentTile extends StatelessWidget {
           Expanded(child: Text(attachment.originalName, style: const TextStyle(fontSize: 13, fontFamily: 'Inter', color: AppColors.textPrimary), overflow: TextOverflow.ellipsis)),
           const Icon(Icons.open_in_new_rounded, size: 16, color: AppColors.textHint),
         ]),
+      ),
+    );
+  }
+}
+
+class _MarkAsReadButton extends ConsumerStatefulWidget {
+  final ReminderModel reminder;
+  const _MarkAsReadButton({required this.reminder});
+
+  @override
+  ConsumerState<_MarkAsReadButton> createState() => _MarkAsReadButtonState();
+}
+
+class _MarkAsReadButtonState extends ConsumerState<_MarkAsReadButton> {
+  bool _isLoading = false;
+  bool _isSuccess = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.reminder.isRead || _isSuccess) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.green.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.green.withOpacity(0.3)),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.check_circle_rounded, color: Colors.green, size: 20),
+            SizedBox(width: 8),
+            Text('You have read this notice', style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600)),
+          ],
+        ),
+      );
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton.icon(
+        onPressed: _isLoading ? null : () async {
+          setState(() => _isLoading = true);
+          try {
+            await ReminderRepository().getReminderById(widget.reminder.id);
+            ref.invalidate(studentDashboardProvider);
+            if (mounted) {
+              setState(() {
+                _isLoading = false;
+                _isSuccess = true;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Notice marked as read'), behavior: SnackBarBehavior.floating),
+              );
+            }
+          } catch (e) {
+            if (mounted) {
+              setState(() => _isLoading = false);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
+              );
+            }
+          }
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 0,
+        ),
+        icon: _isLoading 
+            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+            : const Icon(Icons.check_circle_outline_rounded),
+        label: Text(_isLoading ? 'Processing...' : 'Mark as Read', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
       ),
     );
   }

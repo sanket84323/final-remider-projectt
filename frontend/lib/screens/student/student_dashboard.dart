@@ -189,6 +189,9 @@ class _DashboardContent extends StatelessWidget {
         ? rawReminders 
         : rawReminders.where((r) => r.category == selectedCategory).toList();
 
+    final unreadReminders = rawReminders.where((r) => !r.isRead).take(3).toList();
+    final pendingAssignments = upcomingAssignments.where((a) => !a.isCompleted && !a.isPending).take(3).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -200,7 +203,7 @@ class _DashboardContent extends StatelessWidget {
               Expanded(child: _StatCard(
                 icon: Icons.notifications_active_rounded,
                 value: '${stats['unreadNotifications'] ?? 0}',
-                label: 'Unread',
+                label: 'Unread Reminders',
                 color: AppColors.accent,
                 onTap: () => context.go('/student-alerts'),
               )),
@@ -208,9 +211,9 @@ class _DashboardContent extends StatelessWidget {
               Expanded(child: _StatCard(
                 icon: Icons.assignment_outlined,
                 value: '${stats['pendingAssignments'] ?? 0}',
-                label: 'Pending',
+                label: 'Pending Assignment',
                 color: AppColors.primary,
-                onTap: () => context.push('/student/assignments'), // We'll add this route
+                onTap: () => context.push('/student/assignments'),
               )),
             ],
           ),

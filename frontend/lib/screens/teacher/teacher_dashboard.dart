@@ -17,7 +17,6 @@ class TeacherDashboard extends ConsumerStatefulWidget {
 }
 
 class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
-  String _searchQuery = '';
 
   @override
   void initState() {
@@ -37,6 +36,9 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
             SliverAppBar(
               expandedHeight: 150,
               pinned: true,
+              elevation: 0,
+              backgroundColor: const Color(0xFF004D40),
+              title: const Text('CampusSync', style: TextStyle(color: Colors.white, fontFamily: 'Inter')),
               flexibleSpace: FlexibleSpaceBar(
                 background: Container(
                   decoration: const BoxDecoration(gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF004D40), Color(0xFF00897B)])),
@@ -54,21 +56,6 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
                           ],
                         ),
                         const SizedBox(height: 12),
-                        Container(
-                          height: 40,
-                          decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
-                          child: TextField(
-                            onChanged: (v) => setState(() => _searchQuery = v),
-                            style: const TextStyle(color: Colors.white, fontSize: 14),
-                            decoration: const InputDecoration(
-                              hintText: 'Search notices or assignments...',
-                              hintStyle: TextStyle(color: Colors.white54, fontSize: 14),
-                              prefixIcon: Icon(Icons.search, color: Colors.white54, size: 20),
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(vertical: 10),
-                            ),
-                          ),
-                        ),
                       ]),
                     ),
                   ),
@@ -82,22 +69,14 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
                     context.go('/login');
                   },
                 ),
-                IconButton(
-                  onPressed: () => context.go('/teacher-create'),
-                  icon: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
-                    child: const Icon(Icons.add_rounded, color: Colors.white),
-                  ),
-                ),
               ],
             ),
 
             SliverToBoxAdapter(
               child: dashboardAsync.maybeWhen(
-                data: (data) => _TeacherDashboardContent(data: data, search: _searchQuery),
+                data: (data) => _TeacherDashboardContent(data: data),
                 loading: () => dashboardAsync.hasValue 
-                    ? _TeacherDashboardContent(data: dashboardAsync.value!, search: _searchQuery)
+                    ? _TeacherDashboardContent(data: dashboardAsync.value!)
                     : const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator())),
                 error: (e, _) => Center(child: Padding(padding: const EdgeInsets.all(32), child: Text('Error: $e'))),
                 orElse: () => const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator())),
@@ -116,22 +95,34 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
   }
 }
 
-class _TeacherDashboardContent extends StatelessWidget {
+class _TeacherDashboardContent extends StatefulWidget {
   final Map<String, dynamic> data;
-  final String search;
-  const _TeacherDashboardContent({required this.data, required this.search});
+  const _TeacherDashboardContent({required this.data});
+
+  @override
+  State<_TeacherDashboardContent> createState() => _TeacherDashboardContentState();
+}
+
+class _TeacherDashboardContentState extends State<_TeacherDashboardContent> {
+  String _scheduledSearch = '';
+  String _sentSearch = '';
+  String _assignmentSearch = '';
+
+  bool _isSearchingScheduled = false;
+  bool _isSearchingSent = false;
+  bool _isSearchingAssignments = false;
 
   @override
   Widget build(BuildContext context) {
     try {
-      final stats = data['stats'] ?? {};
-      final allAssignments = (data['assignments'] as List?)?.map((a) => AssignmentModel.fromJson(a)).toList() ?? [];
-      final allReminders = (data['recentReminders'] as List?)?.map((r) => ReminderModel.fromJson(r)).toList() ?? [];
-      final allScheduled = (data['scheduledReminders'] as List?)?.map((r) => ReminderModel.fromJson(r)).toList() ?? [];
+      final stats = widget.data['stats'] ?? {};
+      final allAssignments = (widget.data['assignments'] as List?)?.map((a) => AssignmentModel.fromJson(a)).toList() ?? [];
+      final allReminders = (widget.data['recentReminders'] as List?)?.map((r) => ReminderModel.fromJson(r)).toList() ?? [];
+      final allScheduled = (widget.data['scheduledReminders'] as List?)?.map((r) => ReminderModel.fromJson(r)).toList() ?? [];
 
-      final assignments = allAssignments.where((a) => a.title.toLowerCase().contains(search.toLowerCase())).toList();
-      final recentReminders = allReminders.where((r) => r.title.toLowerCase().contains(search.toLowerCase())).toList();
-      final scheduledReminders = allScheduled.where((r) => r.title.toLowerCase().contains(search.toLowerCase())).toList();
+      final assignments = allAssignments.where((a) => a.title.toLowerCase().contains(_assignmentSearch.toLowerCase())).toList();
+      final recentReminders = allReminders.where((r) => r.title.toLowerCase().contains(_sentSearch.toLowerCase())).toList();
+      final scheduledReminders = allScheduled.where((r) => r.title.toLowerCase().contains(_scheduledSearch.toLowerCase())).toList();
 
       return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         // ─── Stats Row ───────────────────────────────────────────────────────
@@ -140,7 +131,7 @@ class _TeacherDashboardContent extends StatelessWidget {
           child: Row(children: [
             Expanded(child: _StatCard(value: '${stats['totalReminders'] ?? 0}', label: 'Notices', icon: Icons.send_rounded, color: const Color(0xFF00897B))),
             const SizedBox(width: 12),
-            Expanded(child: _StatCard(value: '${assignments.length}', label: 'Assignments', icon: Icons.assignment_rounded, color: AppColors.primary)),
+            Expanded(child: _StatCard(value: '${allAssignments.length}', label: 'Assignments', icon: Icons.assignment_rounded, color: AppColors.primary)),
             const SizedBox(width: 12),
             Expanded(child: _StatCard(value: '${stats['scheduledCount'] ?? 0}', label: 'Scheduled', icon: Icons.schedule_rounded, color: AppColors.accent)),
           ]),
@@ -158,18 +149,55 @@ class _TeacherDashboardContent extends StatelessWidget {
         const SizedBox(height: 8),
 
         // ─── Scheduled Notices ────────────────────────────────────────────────
-        if (scheduledReminders.isNotEmpty) ...[
-          _SectionHeader(title: '📅 Scheduled Notices', action: null, onAction: null),
-          ...scheduledReminders.map((r) => _ReminderRow(
-            reminder: r, 
-            onTap: () => {}, // No receipts for future notices yet
-          )),
+        if (allScheduled.isNotEmpty) ...[
+          _SectionHeader(
+            title: '📅 Scheduled Notices', 
+            onSearch: () => setState(() => _isSearchingScheduled = !_isSearchingScheduled),
+          ),
+          if (_isSearchingScheduled)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: TextField(
+                onChanged: (v) => setState(() => _scheduledSearch = v),
+                decoration: InputDecoration(
+                  hintText: 'Search scheduled...',
+                  prefixIcon: const Icon(Icons.search, size: 18),
+                  isDense: true,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ),
+          if (scheduledReminders.isEmpty)
+            const Padding(padding: EdgeInsets.all(16), child: Text('No matching scheduled notices', style: TextStyle(color: AppColors.textHint)))
+          else
+            ...scheduledReminders.map((r) => _ReminderRow(
+              reminder: r, 
+              onTap: () => {}, 
+            )),
         ],
 
         // ─── Recent Sent Notices ────────────────────────────────────────────────
-        _SectionHeader(title: 'Recent Sent Notices', action: 'View all', onAction: () => context.go('/teacher-scheduled')),
+        _SectionHeader(
+          title: 'Recent Sent Notices', 
+          action: 'View all', 
+          onAction: () => context.go('/teacher-scheduled'),
+          onSearch: () => setState(() => _isSearchingSent = !_isSearchingSent),
+        ),
+        if (_isSearchingSent)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: TextField(
+              onChanged: (v) => setState(() => _sentSearch = v),
+              decoration: InputDecoration(
+                hintText: 'Search sent notices...',
+                prefixIcon: const Icon(Icons.search, size: 18),
+                isDense: true,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ),
         if (recentReminders.isEmpty)
-          const EmptyStateWidget(icon: Icons.notifications_none, message: 'No reminders sent yet')
+          const EmptyStateWidget(icon: Icons.notifications_none, message: 'No reminders found')
         else
           ...recentReminders.map((r) => _ReminderRow(
             reminder: r, 
@@ -177,9 +205,25 @@ class _TeacherDashboardContent extends StatelessWidget {
           )),
 
         // ─── Assignments ──────────────────────────────────────────────
-        _SectionHeader(title: 'Active Assignments', action: null, onAction: null),
+        _SectionHeader(
+          title: 'Active Assignments', 
+          onSearch: () => setState(() => _isSearchingAssignments = !_isSearchingAssignments),
+        ),
+        if (_isSearchingAssignments)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: TextField(
+              onChanged: (v) => setState(() => _assignmentSearch = v),
+              decoration: InputDecoration(
+                hintText: 'Search assignments...',
+                prefixIcon: const Icon(Icons.search, size: 18),
+                isDense: true,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ),
         if (assignments.isEmpty)
-          const EmptyStateWidget(icon: Icons.event_available, message: 'No assignments created yet')
+          const EmptyStateWidget(icon: Icons.event_available, message: 'No assignments found')
         else
           ...assignments.map((a) => _DeadlineRow(
             assignment: a, 
@@ -256,15 +300,29 @@ class _SectionHeader extends StatelessWidget {
   final String title;
   final String? action;
   final VoidCallback? onAction;
-  const _SectionHeader({required this.title, this.action, this.onAction});
+  final VoidCallback? onSearch;
+  const _SectionHeader({required this.title, this.action, this.onAction, this.onSearch});
 
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
     child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Inter', color: AppColors.textPrimary)),
-      if (action != null)
-        GestureDetector(onTap: onAction, child: Text(action!, style: const TextStyle(fontSize: 13, color: AppColors.primary, fontFamily: 'Inter', fontWeight: FontWeight.w500))),
+      Row(
+        children: [
+          if (onSearch != null)
+            IconButton(
+              icon: const Icon(Icons.search, size: 20, color: AppColors.primary),
+              onPressed: onSearch,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          if (action != null) ...[
+            const SizedBox(width: 12),
+            GestureDetector(onTap: onAction, child: Text(action!, style: const TextStyle(fontSize: 13, color: AppColors.primary, fontFamily: 'Inter', fontWeight: FontWeight.w500))),
+          ],
+        ],
+      ),
     ]),
   );
 }
