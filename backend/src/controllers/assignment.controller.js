@@ -8,6 +8,7 @@ const Notification = require('../models/Notification');
 const ActivityLog = require('../models/ActivityLog');
 const notificationService = require('../services/notification.service');
 const { successResponse, errorResponse, paginatedResponse } = require('../utils/apiResponse');
+const PDFDocument = require('pdfkit');
 
 const createAssignment = async (req, res) => {
   try {
@@ -216,4 +217,140 @@ const markStudentComplete = async (req, res) => {
   }
 };
 
-module.exports = { createAssignment, getAssignments, getAssignmentById, markComplete, markStudentComplete, updateAssignment, deleteAssignment };
+const generateAssignmentReport = async (req, res) => {
+  try {
+    const assignment = await Assignment.findById(req.params.id)
+      .populate('createdBy', 'name email')
+      .populate('completedBy.userId', 'name email className rollNumber');
+    
+    if (!assignment) return res.status(404).send('Assignment not found');
+
+    const doc = new PDFDocument({ margin: 0, size: 'A4' });
+    let filename = `${assignment.title.replace(/\s+/g, '_')}.pdf`;
+    
+    res.setHeader('Content-disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-type', 'application/pdf');
+
+    doc.pipe(res);
+
+    // ─── Professional Header ──────────────────────────────────────────────────
+    doc.rect(0, 0, 612, 120).fill('#1565C0');
+    doc.fillColor('#FFFFFF').fontSize(22).font('Helvetica-Bold').text(assignment.title.toUpperCase(), 50, 45);
+    doc.fontSize(10).font('Helvetica').text('CAMPUSSYNC ACADEMIC REPORT', 50, 75);
+    doc.fontSize(8).text(`GENERATED ON: ${new Date().toLocaleString()}`, 400, 45, { align: 'right', width: 160 });
+
+    // ─── Assignment Overview Card ─────────────────────────────────────────────
+    doc.fillColor('#1A1A2E').fontSize(18).font('Helvetica-Bold').text('Assignment Activity Report', 50, 150);
+    
+    doc.rect(50, 180, 512, 70).stroke('#E0E6F0');
+    doc.fontSize(10).fillColor('#5A6070').font('Helvetica-Bold').text('TITLE:', 70, 195);
+    doc.fillColor('#1A1A2E').font('Helvetica').text(assignment.title, 115, 195);
+    
+    doc.fillColor('#5A6070').font('Helvetica-Bold').text('SUBJECT:', 70, 220);
+    doc.fillColor('#1A1A2E').font('Helvetica').text(assignment.subject || 'N/A', 130, 220);
+    
+    doc.fillColor('#5A6070').font('Helvetica-Bold').text('DUE DATE:', 320, 195);
+    doc.fillColor('#1A1A2E').font('Helvetica').text(new Date(assignment.dueDate).toLocaleDateString(), 385, 195);
+    
+    doc.fillColor('#5A6070').font('Helvetica-Bold').text('TEACHER:', 320, 220);
+    doc.fillColor('#1A1A2E').font('Helvetica').text(assignment.createdBy?.name || 'N/A', 380, 220);
+
+    // ─── Stats Summary Boxes ──────────────────────────────────────────────────
+    const studentFilter = { role: 'student', isActive: true };
+    if (assignment.targetAudience.type === 'class') {
+      studentFilter.className = assignment.targetAudience.className;
+    } else if (assignment.targetAudience.type === 'department') {
+      studentFilter.department = assignment.targetAudience.department;
+    }
+    const allStudents = await User.find(studentFilter).select('_id name email className rollNumber').lean();
+    
+    const approvedCount = assignment.completedBy.filter(c => c.status === 'completed').length;
+    const pendingCount = assignment.completedBy.filter(c => c.status === 'pending').length;
+
+    const drawStatBox = (x, label, value, color) => {
+      doc.rect(x, 270, 120, 50).fill(color);
+      doc.fillColor('#FFFFFF').fontSize(14).font('Helvetica-Bold').text(value, x, 280, { width: 120, align: 'center' });
+      doc.fontSize(7).text(label, x, 300, { width: 120, align: 'center' });
+    };
+
+    drawStatBox(50, 'TOTAL TARGETED', `${allStudents.length}`, '#1565C0');
+    drawStatBox(180, 'APPROVED', `${approvedCount}`, '#2E7D32');
+    drawStatBox(310, 'PENDING', `${pendingCount}`, '#FF8F00');
+    drawStatBox(440, 'NOT SUBMITTED', `${allStudents.length - (approvedCount + pendingCount)}`, '#C62828');
+
+    // ─── Submission Table ─────────────────────────────────────────────────────
+    doc.fillColor('#1A1A2E').fontSize(14).font('Helvetica-Bold').text('Detailed Student Status', 50, 350);
+    
+    const tableTop = 375;
+    const colX = [50, 220, 300, 370, 470];
+    const colLabels = ['Student Name', 'Roll No', 'Class', 'Status', 'Date'];
+
+    // Header Background
+    doc.rect(50, tableTop, 512, 25).fill('#F0F4F8');
+    doc.fillColor('#1A1A2E').fontSize(9).font('Helvetica-Bold');
+    
+    for(let i=0; i<colLabels.length; i++) {
+      doc.text(colLabels[i], colX[i], tableTop + 8);
+    }
+
+    let y = tableTop + 25;
+    doc.font('Helvetica').fontSize(8);
+
+    for (let i = 0; i < allStudents.length; i++) {
+      const student = allStudents[i];
+      const completion = assignment.completedBy.find(c => 
+        (c.userId?._id || c.userId)?.toString() === student._id.toString()
+      );
+      
+      // Row Background
+      if (i % 2 === 0) {
+        doc.rect(50, y, 512, 20).fill('#F8F9FE');
+      }
+
+      let statusText = 'Not Submitted';
+      let dateText = '-';
+      let statusColor = '#C62828';
+
+      if (completion) {
+        if (completion.status === 'completed') {
+          statusText = 'Approved';
+          statusColor = '#2E7D32';
+        } else {
+          statusText = 'Pending Approval';
+          statusColor = '#FF8F00';
+        }
+        dateText = new Date(completion.completedAt).toLocaleDateString();
+      }
+
+      if (y > 750) {
+        doc.addPage({ margin: 50 });
+        y = 50;
+      }
+
+      doc.fillColor('#1A1A2E').text(student.name || 'N/A', colX[0] + 5, y + 6);
+      doc.text(student.rollNumber || '-', colX[1], y + 6);
+      doc.text(student.className || '-', colX[2], y + 6);
+      doc.fillColor(statusColor).font('Helvetica-Bold').text(statusText, colX[3], y + 6);
+      doc.fillColor('#5A6070').font('Helvetica').text(dateText, colX[4], y + 6);
+      
+      y += 20;
+    }
+
+    // Footer
+    const pages = doc.bufferedPageRange();
+    for (let i = 0; i < pages.count; i++) {
+      doc.switchToPage(i);
+      doc.fillColor('#9EA8B8').fontSize(8).text(
+        `Page ${i + 1} of ${pages.count} - CampusSync Academic Report`,
+        50, 800, { align: 'center', width: 512 }
+      );
+    }
+
+    doc.end();
+  } catch (error) {
+    console.error('PDF Export Error:', error);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+module.exports = { createAssignment, getAssignments, getAssignmentById, markComplete, markStudentComplete, updateAssignment, deleteAssignment, generateAssignmentReport };

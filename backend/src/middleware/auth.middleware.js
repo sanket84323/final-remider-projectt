@@ -9,12 +9,17 @@ const { errorResponse } = require('../utils/apiResponse');
 
 const authenticate = async (req, res, next) => {
   try {
+    let token;
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return errorResponse(res, 'Access denied. No token provided.', 401);
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    } else if (req.query.token) {
+      token = req.query.token;
     }
 
-    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return errorResponse(res, 'Access denied. No token provided.', 401);
+    }
     const decoded = verifyAccessToken(token);
 
     // Fetch fresh user (ensures account still active)

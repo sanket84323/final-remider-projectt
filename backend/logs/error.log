@@ -69,3 +69,10 @@ SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 
 [2026-04-26 01:44:36] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
 [2026-04-26 01:46:12] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
 [2026-04-26 01:50:35] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 01:51:55] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 02:08:12] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 02:08:32] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 02:10:52] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 02:12:20] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 02:17:25] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 02:20:19] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.

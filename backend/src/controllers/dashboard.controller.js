@@ -60,18 +60,20 @@ const getStudentDashboard = async (req, res) => {
 const getTeacherDashboard = async (req, res) => {
   try {
     const now = new Date();
-    const [totalReminders, sentThisMonth, scheduledCount, recentReminders, assignments] = await Promise.all([
+    const [totalReminders, sentThisMonth, scheduledCount, recentReminders, assignments, scheduledReminders] = await Promise.all([
       Reminder.countDocuments({ createdBy: req.user._id }),
       Reminder.countDocuments({ createdBy: req.user._id, status: 'sent', createdAt: { $gte: new Date(now.getFullYear(), now.getMonth(), 1) } }),
       Reminder.countDocuments({ createdBy: req.user._id, status: 'scheduled' }),
-      Reminder.find({ createdBy: req.user._id }).sort({ createdAt: -1 }).limit(5).populate('createdBy', 'name'),
+      Reminder.find({ createdBy: req.user._id, status: 'sent' }).sort({ createdAt: -1 }).limit(5).populate('createdBy', 'name'),
       Assignment.find({ createdBy: req.user._id }).sort({ dueDate: 1 }).limit(10).populate('createdBy', 'name'),
+      Reminder.find({ createdBy: req.user._id, status: 'scheduled' }).sort({ scheduledFor: 1 }).limit(5).populate('createdBy', 'name'),
     ]);
 
     return successResponse(res, {
       stats: { totalReminders, sentThisMonth, scheduledCount },
       recentReminders,
-      assignments, // Renamed from upcomingDeadlines to include all
+      scheduledReminders,
+      assignments,
     }, 'Teacher dashboard loaded');
   } catch (error) {
     return errorResponse(res, error.message, 500);

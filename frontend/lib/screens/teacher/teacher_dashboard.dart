@@ -17,6 +17,8 @@ class TeacherDashboard extends ConsumerStatefulWidget {
 }
 
 class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
+  String _searchQuery = '';
+
   @override
   void initState() {
     super.initState();
@@ -43,8 +45,30 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
                       padding: const EdgeInsets.all(AppDimens.paddingMd),
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.end, children: [
                         const Text('Teacher Portal', style: TextStyle(color: Colors.white70, fontSize: 13, fontFamily: 'Inter')),
-                        authState.whenData((user) => Text(user?.name ?? '', style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700, fontFamily: 'Inter'))).valueOrNull ?? const SizedBox(),
-                        Text(DateFormat('EEEE, d MMMM').format(DateTime.now()), style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13, fontFamily: 'Inter')),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            authState.whenData((user) => Text(user?.name ?? '', style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700, fontFamily: 'Inter'))).valueOrNull ?? const SizedBox(),
+                            Text(DateFormat('EEEE, d MMMM').format(DateTime.now()), style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13, fontFamily: 'Inter')),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          height: 40,
+                          decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
+                          child: TextField(
+                            onChanged: (v) => setState(() => _searchQuery = v),
+                            style: const TextStyle(color: Colors.white, fontSize: 14),
+                            decoration: const InputDecoration(
+                              hintText: 'Search notices or assignments...',
+                              hintStyle: TextStyle(color: Colors.white54, fontSize: 14),
+                              prefixIcon: Icon(Icons.search, color: Colors.white54, size: 20),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(vertical: 10),
+                            ),
+                          ),
+                        ),
                       ]),
                     ),
                   ),
@@ -71,9 +95,9 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
 
             SliverToBoxAdapter(
               child: dashboardAsync.maybeWhen(
-                data: (data) => _TeacherDashboardContent(data: data),
+                data: (data) => _TeacherDashboardContent(data: data, search: _searchQuery),
                 loading: () => dashboardAsync.hasValue 
-                    ? _TeacherDashboardContent(data: dashboardAsync.value!)
+                    ? _TeacherDashboardContent(data: dashboardAsync.value!, search: _searchQuery)
                     : const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator())),
                 error: (e, _) => Center(child: Padding(padding: const EdgeInsets.all(32), child: Text('Error: $e'))),
                 orElse: () => const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator())),
@@ -94,14 +118,20 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
 
 class _TeacherDashboardContent extends StatelessWidget {
   final Map<String, dynamic> data;
-  const _TeacherDashboardContent({required this.data});
+  final String search;
+  const _TeacherDashboardContent({required this.data, required this.search});
 
   @override
   Widget build(BuildContext context) {
     try {
       final stats = data['stats'] ?? {};
-      final assignments = (data['assignments'] as List?)?.map((a) => AssignmentModel.fromJson(a)).toList() ?? [];
-      final recentReminders = (data['recentReminders'] as List?)?.map((r) => ReminderModel.fromJson(r)).toList() ?? [];
+      final allAssignments = (data['assignments'] as List?)?.map((a) => AssignmentModel.fromJson(a)).toList() ?? [];
+      final allReminders = (data['recentReminders'] as List?)?.map((r) => ReminderModel.fromJson(r)).toList() ?? [];
+      final allScheduled = (data['scheduledReminders'] as List?)?.map((r) => ReminderModel.fromJson(r)).toList() ?? [];
+
+      final assignments = allAssignments.where((a) => a.title.toLowerCase().contains(search.toLowerCase())).toList();
+      final recentReminders = allReminders.where((r) => r.title.toLowerCase().contains(search.toLowerCase())).toList();
+      final scheduledReminders = allScheduled.where((r) => r.title.toLowerCase().contains(search.toLowerCase())).toList();
 
       return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         // ─── Stats Row ───────────────────────────────────────────────────────
@@ -127,8 +157,17 @@ class _TeacherDashboardContent extends StatelessWidget {
         ),
         const SizedBox(height: 8),
 
-        // ─── Recent Reminders ────────────────────────────────────────────────
-        _SectionHeader(title: 'Recent Reminders', action: 'View all', onAction: () => context.go('/teacher-scheduled')),
+        // ─── Scheduled Notices ────────────────────────────────────────────────
+        if (scheduledReminders.isNotEmpty) ...[
+          _SectionHeader(title: '📅 Scheduled Notices', action: null, onAction: null),
+          ...scheduledReminders.map((r) => _ReminderRow(
+            reminder: r, 
+            onTap: () => {}, // No receipts for future notices yet
+          )),
+        ],
+
+        // ─── Recent Sent Notices ────────────────────────────────────────────────
+        _SectionHeader(title: 'Recent Sent Notices', action: 'View all', onAction: () => context.go('/teacher-scheduled')),
         if (recentReminders.isEmpty)
           const EmptyStateWidget(icon: Icons.notifications_none, message: 'No reminders sent yet')
         else
@@ -252,7 +291,7 @@ class _ReminderRow extends StatelessWidget {
             Text(DateFormat('d MMM · h:mm a').format(reminder.createdAt), style: const TextStyle(fontSize: 11, color: AppColors.textHint, fontFamily: 'Inter')),
           ])),
           GestureDetector(
-            onTap: () => context.push('/teacher/receipts/${reminder.id}'),
+            onTap: () => context.push('/teacher-receipts/${reminder.id}'),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(color: AppColors.primaryContainer, borderRadius: BorderRadius.circular(20)),

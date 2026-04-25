@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../core/constants/app_constants.dart';
 import '../../data/services/api_service.dart';
 
@@ -16,6 +18,8 @@ class TeacherAssignmentDetailScreen extends ConsumerStatefulWidget {
 class _TeacherAssignmentDetailScreenState extends ConsumerState<TeacherAssignmentDetailScreen> {
   Map<String, dynamic>? _data;
   bool _loading = true;
+  bool _isSearching = false;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -66,6 +70,24 @@ class _TeacherAssignmentDetailScreenState extends ConsumerState<TeacherAssignmen
     }
   }
 
+  Future<void> _downloadReport() async {
+    try {
+      final token = await const FlutterSecureStorage().read(key: 'access_token');
+      final urlString = '${AppStrings.baseUrl}/assignments/${widget.assignmentId}/report?token=$token';
+      final url = Uri.parse(urlString);
+      
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not launch $urlString';
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Download failed: $e')));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -103,10 +125,39 @@ class _TeacherAssignmentDetailScreenState extends ConsumerState<TeacherAssignmen
         } catch (_) {}
       }
 
-      final allStudents = (assignment['allTargetedStudents'] as List? ?? []);
+      final allStudents = (assignment['allTargetedStudents'] as List? ?? [])
+          .where((s) => (s['name']?.toString().toLowerCase().contains(_searchQuery.toLowerCase()) ?? true) ||
+                        (s['rollNumber']?.toString().toLowerCase().contains(_searchQuery.toLowerCase()) ?? true))
+          .toList();
 
       return Scaffold(
-        appBar: AppBar(title: Text(assignment['title'] ?? 'Assignment Details')),
+        appBar: AppBar(
+          title: _isSearching 
+            ? TextField(
+                onChanged: (val) => setState(() => _searchQuery = val),
+                autofocus: true,
+                style: const TextStyle(fontSize: 16),
+                decoration: const InputDecoration(
+                  hintText: 'Search student name or roll...',
+                  border: InputBorder.none,
+                ),
+              )
+            : Text(assignment['title'] ?? 'Assignment Details'),
+          actions: [
+            IconButton(
+              icon: Icon(_isSearching ? Icons.close : Icons.search),
+              onPressed: () => setState(() {
+                _isSearching = !_isSearching;
+                if (!_isSearching) _searchQuery = '';
+              }),
+            ),
+            IconButton(
+              icon: const Icon(Icons.picture_as_pdf_rounded, color: AppColors.error, size: 20),
+              onPressed: _downloadReport,
+              tooltip: 'Download PDF Report',
+            ),
+          ],
+        ),
         body: Column(
           children: [
             _OverviewCard(assignment: assignment),
@@ -117,7 +168,18 @@ class _TeacherAssignmentDetailScreenState extends ConsumerState<TeacherAssignmen
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('Student Submissions', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  Text('${completionStatus.values.where((v) => v == 'completed').length}/${allStudents.length} Approved', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                  Row(
+                    children: [
+                      Text('${completionStatus.values.where((v) => v == 'completed').length}/${allStudents.length} Approved', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.picture_as_pdf_rounded, color: AppColors.error, size: 20),
+                        onPressed: _downloadReport,
+                        tooltip: 'Download PDF Report',
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),

@@ -10,23 +10,56 @@ final _readReceiptsProvider = FutureProvider.family<Map<String, dynamic>, String
   return ReminderRepository().getReadReceipts(reminderId);
 });
 
-class ReadReceiptsScreen extends ConsumerWidget {
+class ReadReceiptsScreen extends ConsumerStatefulWidget {
   final String reminderId;
   const ReadReceiptsScreen({super.key, required this.reminderId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final receiptAsync = ref.watch(_readReceiptsProvider(reminderId));
+  ConsumerState<ReadReceiptsScreen> createState() => _ReadReceiptsScreenState();
+}
+
+class _ReadReceiptsScreenState extends ConsumerState<ReadReceiptsScreen> {
+  String _search = '';
+  bool _isSearching = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final receiptAsync = ref.watch(_readReceiptsProvider(widget.reminderId));
     return Scaffold(
-      appBar: AppBar(title: const Text('Read Receipts'), leading: IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => context.pop())),
+      appBar: AppBar(
+        title: _isSearching 
+          ? TextField(
+              onChanged: (v) => setState(() => _search = v),
+              autofocus: true,
+              style: const TextStyle(fontSize: 16),
+              decoration: const InputDecoration(hintText: 'Search student name...', border: InputBorder.none),
+            )
+          : const Text('Read Receipts'),
+        leading: IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => context.pop()),
+        actions: [
+          IconButton(
+            icon: Icon(_isSearching ? Icons.close : Icons.search),
+            onPressed: () => setState(() {
+              _isSearching = !_isSearching;
+              if (!_isSearching) _search = '';
+            }),
+          ),
+        ],
+      ),
       body: receiptAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (data) {
-          final receipts = data['receipts'] as List? ?? [];
+          final allReceipts = data['receipts'] as List? ?? [];
+          final receipts = allReceipts.where((r) {
+            final name = r['userId']?['name']?.toString().toLowerCase() ?? '';
+            return name.contains(_search.toLowerCase());
+          }).toList();
+
           final readCount = data['readCount'] ?? 0;
           final total = data['totalTargeted'] ?? 0;
           final rate = double.tryParse(data['readRate']?.toString() ?? '0') ?? 0;
+
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
@@ -55,21 +88,25 @@ class ReadReceiptsScreen extends ConsumerWidget {
                 ]),
               ),
               const SizedBox(height: 20),
+
               const Text('Students who read', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, fontFamily: 'Inter')),
               const SizedBox(height: 12),
-              ...List.generate(receipts.length, (i) {
-                final receipt = receipts[i];
-                final user = receipt['userId'];
-                final readAt = DateTime.tryParse(receipt['readAt'] ?? '');
-                return ListTile(
-                  leading: CircleAvatar(backgroundImage: NetworkImage('https://ui-avatars.com/api/?name=${Uri.encodeComponent(user?['name'] ?? '')}&background=1565C0&color=fff'), radius: 20),
-                  title: Text(user?['name'] ?? 'Unknown', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w500, fontSize: 14)),
-                  subtitle: Text('${user?['className'] ?? ''} · Sec ${user?['section'] ?? ''}', style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textHint)),
-                  trailing: readAt != null
-                      ? Text(DateFormat('d MMM, h:mm a').format(readAt), style: const TextStyle(fontSize: 11, color: AppColors.textHint, fontFamily: 'Inter'))
-                      : null,
-                );
-              }),
+              if (receipts.isEmpty)
+                const Center(child: Padding(padding: EdgeInsets.all(32), child: Text('No students found matching your search')))
+              else
+                ...List.generate(receipts.length, (i) {
+                  final receipt = receipts[i];
+                  final user = receipt['userId'];
+                  final readAt = DateTime.tryParse(receipt['readAt'] ?? '');
+                  return ListTile(
+                    leading: CircleAvatar(backgroundImage: NetworkImage('https://ui-avatars.com/api/?name=${Uri.encodeComponent(user?['name'] ?? '')}&background=1565C0&color=fff'), radius: 20),
+                    title: Text(user?['name'] ?? 'Unknown', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w500, fontSize: 14)),
+                    subtitle: Text('${user?['className'] ?? ''} · ${user?['email'] ?? ''}', style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textHint)),
+                    trailing: readAt != null
+                        ? Text(DateFormat('d MMM, h:mm a').format(readAt), style: const TextStyle(fontSize: 11, color: AppColors.textHint, fontFamily: 'Inter'))
+                        : null,
+                  );
+                }),
             ],
           );
         },
