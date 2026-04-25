@@ -39,6 +39,19 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
               elevation: 0,
               backgroundColor: const Color(0xFF004D40),
               title: const Text('CampusSync', style: TextStyle(color: Colors.white, fontFamily: 'Inter')),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.settings_rounded, color: Colors.white),
+                  onPressed: () => context.push('/student/settings'),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.logout_rounded, color: Colors.white),
+                  onPressed: () {
+                    ref.read(authStateProvider.notifier).logout();
+                    context.go('/login');
+                  },
+                ),
+              ],
               flexibleSpace: FlexibleSpaceBar(
                 background: Container(
                   decoration: const BoxDecoration(gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF004D40), Color(0xFF00897B)])),
@@ -61,15 +74,6 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
                   ),
                 ),
               ),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.logout_rounded, color: Colors.white),
-                  onPressed: () {
-                    ref.read(authStateProvider.notifier).logout();
-                    context.go('/login');
-                  },
-                ),
-              ],
             ),
 
             SliverToBoxAdapter(

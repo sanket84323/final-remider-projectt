@@ -33,6 +33,7 @@ class ClassManagementScreen extends ConsumerWidget {
             ...classes.map((c) => Card(
               margin: const EdgeInsets.only(bottom: 12),
               child: ListTile(
+                onTap: () => context.push('/admin-class-students/${Uri.encodeComponent(c)}'),
                 leading: const Icon(Icons.class_rounded, color: AppColors.primary),
                 title: Text(c, style: const TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Inter')),
                 trailing: IconButton(

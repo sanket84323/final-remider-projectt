@@ -31,6 +31,7 @@ import '../../screens/admin/announcement_screen.dart';
 import '../../screens/admin/analytics_screen.dart';
 import '../../screens/admin/class_assignment_detail_screen.dart';
 import '../../screens/admin/class_management_screen.dart';
+import '../../screens/admin/class_students_screen.dart';
 import '../../screens/admin/student_detail_screen.dart';
 import '../../screens/shared/assignment_detail_screen.dart';
 import '../../screens/admin/teacher_detail_screen.dart';
@@ -204,6 +205,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/admin-classes',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (_, __) => const ClassManagementScreen(),
+      ),
+      GoRoute(
+        path: '/admin-class-students/:className',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, s) => ClassStudentsScreen(className: s.pathParameters['className']!),
       ),
       GoRoute(
         path: '/admin-student-analytics/:id',

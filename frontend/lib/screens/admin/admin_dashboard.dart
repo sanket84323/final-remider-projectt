@@ -29,15 +29,21 @@ class AdminDashboard extends ConsumerWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(AppDimens.paddingMd),
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.end, children: [
-                        const Text('Admin Panel', style: TextStyle(color: Colors.white70, fontSize: 13, fontFamily: 'Inter')),
-                        authState.whenData((u) => Text(u?.name ?? '', style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700, fontFamily: 'Inter'))).valueOrNull ?? const SizedBox(),
-                        Text(DateFormat('EEEE, d MMMM').format(DateTime.now()), style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13, fontFamily: 'Inter')),
+                        const Text('HOD Panel', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2, fontFamily: 'Inter')),
+                        const Text('Dr. Bhagyashree Dhakulkar', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900, fontFamily: 'Inter', letterSpacing: -0.5)),
+                        const Text('Artificial Intelligence and Data Science', style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w500, fontFamily: 'Inter')),
+                        const SizedBox(height: 4),
+                        Text(DateFormat('EEEE, d MMMM').format(DateTime.now()), style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11, fontFamily: 'Inter')),
                       ]),
                     ),
                   ),
                 ),
               ),
               actions: [
+                IconButton(
+                  icon: const Icon(Icons.settings_rounded, color: Colors.white),
+                  onPressed: () => context.push('/student/settings'), // Using shared settings screen
+                ),
                 IconButton(
                   icon: const Icon(Icons.logout_rounded, color: Colors.white),
                   onPressed: () {

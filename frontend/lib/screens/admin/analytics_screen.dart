@@ -20,6 +20,7 @@ class AnalyticsScreen extends ConsumerWidget {
       backgroundColor: AppColors.surface,
       appBar: AppBar(
         title: const Text('Department Insights', style: TextStyle(fontWeight: FontWeight.w800, fontFamily: 'Inter')),
+        leading: IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => context.pop()),
         actions: [
           IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: () => ref.refresh(_analyticsProvider)),
         ],

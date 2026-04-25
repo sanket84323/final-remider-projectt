@@ -1354,3 +1354,8 @@ SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 
 [2026-04-26 04:44:18] [32minfo[39m: ::ffff:127.0.0.1 - - [25/Apr/2026:23:14:18 +0000] "GET /api/users?role=student HTTP/1.1" 200 9674 "http://localhost:49260/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
 [2026-04-26 04:44:51] [32minfo[39m: ::ffff:127.0.0.1 - - [25/Apr/2026:23:14:51 +0000] "GET /api/departments/69ed0cdf876ade57f7981861/classes HTTP/1.1" 200 163 "http://localhost:49260/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
 [2026-04-26 04:45:12] [32minfo[39m: ::ffff:127.0.0.1 - - [25/Apr/2026:23:15:12 +0000] "GET /api/analytics/student/69ecf1045ed952a0d24535c8 HTTP/1.1" 200 1003 "http://localhost:49260/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 04:48:52] [32minfo[39m: ☁️  Cloudinary configured
+[2026-04-26 04:48:52] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 04:48:52] [32minfo[39m: 🚀 CampusSync Server running on port 5000 in development mode
+[2026-04-26 04:48:52] [32minfo[39m: 📅 Cron scheduler started
+[2026-04-26 04:48:53] [32minfo[39m: ✅ MongoDB Connected: ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
