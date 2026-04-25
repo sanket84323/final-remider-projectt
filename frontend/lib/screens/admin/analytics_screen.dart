@@ -19,7 +19,7 @@ class AnalyticsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        title: const Text('Campus Insights', style: TextStyle(fontWeight: FontWeight.w800, fontFamily: 'Inter')),
+        title: const Text('Department Insights', style: TextStyle(fontWeight: FontWeight.w800, fontFamily: 'Inter')),
         actions: [
           IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: () => ref.refresh(_analyticsProvider)),
         ],

@@ -65,14 +65,19 @@ const getAnalytics = async (req, res) => {
       ]),
     ]);
 
+    // Calculate notice read rates as a simple percentage array for the frontend
+    const totalN = notificationReadRate.reduce((acc, curr) => acc + curr.count, 0);
+    const readN = notificationReadRate.find(n => n._id === true)?.count || 0;
+    const globalReadRate = totalN > 0 ? Math.round((readN / totalN) * 100) : 0;
+
     return successResponse(res, {
       totalUsers,
       totalReminders,
       userGrowth,
       remindersByPriority,
       remindersByCategory,
-      notificationReadRate,
-      topActiveTeachers,
+      noticeReadRates: [{ _id: 'Department Overall', readRate: globalReadRate }],
+      topTeachers: topActiveTeachers,
       activityByDay,
       studentActivityByClass,
       assignmentStatsByClass,

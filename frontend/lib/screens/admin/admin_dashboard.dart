@@ -69,7 +69,6 @@ class _AdminDashContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final stats = data['stats'] ?? {};
     final readRate = data['readRate'] ?? '0';
-    final recentActivity = data['recentActivity'] as List? ?? [];
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       // ─── KPI Grid ───────────────────────────────────────────────────────
@@ -123,17 +122,14 @@ class _AdminDashContent extends StatelessWidget {
           crossAxisSpacing: 12,
           childAspectRatio: 2.5,
           children: [
-            _ActionBtn(icon: Icons.manage_accounts_rounded, label: 'Management', color: AppColors.primary, onTap: () => context.go('/admin-users')),
-            _ActionBtn(icon: Icons.campaign_rounded, label: 'Announce', color: const Color(0xFF7B1FA2), onTap: () => context.go('/admin-announce')),
-            _ActionBtn(icon: Icons.bar_chart_rounded, label: 'Analytics', color: const Color(0xFF00897B), onTap: () => context.go('/admin-analytics')),
+            _ActionBtn(icon: Icons.manage_accounts_rounded, label: 'Management', color: AppColors.primary, onTap: () => context.push('/admin-users')),
+            _ActionBtn(icon: Icons.campaign_rounded, label: 'Announce', color: const Color(0xFF7B1FA2), onTap: () => context.push('/admin-announce')),
+            _ActionBtn(icon: Icons.bar_chart_rounded, label: 'Analytics', color: const Color(0xFF00897B), onTap: () => context.push('/admin-analytics')),
             _ActionBtn(icon: Icons.class_rounded, label: 'Manage Classes', color: AppColors.accent, onTap: () => context.push('/admin-classes')),
           ],
         ),
       ),
 
-      // ─── Recent Activity ─────────────────────────────────────────────────
-      const Padding(padding: EdgeInsets.fromLTRB(16, 20, 16, 8), child: Text('Recent Activity', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Inter'))),
-      ...recentActivity.take(8).map((log) => _ActivityTile(log: log)),
       const SizedBox(height: 80),
     ]);
   }

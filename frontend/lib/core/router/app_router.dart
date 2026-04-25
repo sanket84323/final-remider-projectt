@@ -24,7 +24,6 @@ import '../../screens/teacher/scheduled_reminders_screen.dart';
 import '../../screens/teacher/read_receipts_screen.dart';
 import '../../screens/teacher/teacher_profile_screen.dart';
 import '../../screens/teacher/teacher_assignment_detail_screen.dart';
-import '../../screens/admin/admin_shell.dart';
 import '../../screens/admin/admin_dashboard.dart';
 import '../../screens/admin/user_management_screen.dart';
 import '../../screens/admin/department_management_screen.dart';
@@ -222,31 +221,26 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, s) => TeacherDetailScreen(teacherId: s.pathParameters['id']!),
       ),
 
-      // ─── Admin Shell (4 tabs: Dashboard | Users | Analytics | Announce) ─
-      StatefulShellRoute.indexedStack(
+      // ─── Admin Section (No Bottom Menu) ───────────────────────
+      GoRoute(
+        path: '/admin',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state, shell) => AdminShell(shell: shell),
-        branches: [
-          // Tab 0 – Dashboard
-          StatefulShellBranch(navigatorKey: _adminTab0NavKey, routes: [
-            GoRoute(
-              path: '/admin',
-              builder: (_, __) => const AdminDashboard(),
-            ),
-          ]),
-          // Tab 1 – Users
-          StatefulShellBranch(navigatorKey: _adminTab1NavKey, routes: [
-            GoRoute(path: '/admin-users', builder: (_, __) => const UserManagementScreen()),
-          ]),
-          // Tab 2 – Analytics
-          StatefulShellBranch(navigatorKey: _adminTab2NavKey, routes: [
-            GoRoute(path: '/admin-analytics', builder: (_, __) => const AnalyticsScreen()),
-          ]),
-          // Tab 3 – Announce
-          StatefulShellBranch(navigatorKey: _adminTab3NavKey, routes: [
-            GoRoute(path: '/admin-announce', builder: (_, __) => const AnnouncementScreen()),
-          ]),
-        ],
+        builder: (_, __) => const AdminDashboard(),
+      ),
+      GoRoute(
+        path: '/admin-users',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const UserManagementScreen(),
+      ),
+      GoRoute(
+        path: '/admin-analytics',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const AnalyticsScreen(),
+      ),
+      GoRoute(
+        path: '/admin-announce',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const AnnouncementScreen(),
       ),
     ],
   );

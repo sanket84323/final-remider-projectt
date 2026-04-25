@@ -116,13 +116,13 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> with 
                       Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
                         _StatCircle(label: 'Reminders', value: '${stats['totalReminders']}', color: Colors.blueAccent, icon: Icons.campaign_rounded),
                         _StatCircle(label: 'Assignments', value: '${stats['totalAssignments']}', color: Colors.deepPurpleAccent, icon: Icons.assignment_rounded),
-                        _StatCircle(label: 'Sub. Rate', value: '$submissionRate%', color: Colors.greenAccent.shade700, icon: Icons.trending_up_rounded),
+                        _StatCircle(label: 'Submission', value: '$submissionRate%', color: Colors.greenAccent.shade700, icon: Icons.trending_up_rounded),
                       ]),
                       const SizedBox(height: 24),
                       const Divider(),
                       const SizedBox(height: 16),
                       Text(
-                        'This teacher has achieved a $submissionRate% student submission rate across all posted assignments.',
+                        'Average student submission rate is $submissionRate% across all posted tasks.',
                         textAlign: TextAlign.center,
                         style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontFamily: 'Inter'),
                       ),
