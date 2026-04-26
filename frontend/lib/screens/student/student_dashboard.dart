@@ -83,7 +83,7 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
           slivers: [
             // ─── App Bar ──────────────────────────────────────────────────
             SliverAppBar(
-              expandedHeight: 180,
+              expandedHeight: 200,
               floating: false,
               pinned: true,
               elevation: 0,
@@ -292,134 +292,202 @@ class _DashboardContent extends ConsumerWidget {
         ? rawReminders 
         : rawReminders.where((r) => r.category == selectedCategory).toList();
 
-    final unreadReminders = rawReminders.where((r) => !r.isRead).take(3).toList();
-    final pendingAssignments = upcomingAssignments.where((a) => !a.isCompleted && !a.isPending).take(3).toList();
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final isMobile = width < 600;
+        final isTablet = width >= 600 && width < 1024;
+        
+        final listCrossCount = isMobile ? 1 : 2;
+        final listRatio = isMobile ? 2.6 : 3.2;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // ─── Stats Row ────────────────────────────────────────────────────
-        Padding(
-          padding: const EdgeInsets.all(AppDimens.paddingMd),
-          child: Row(
-            children: [
-              Expanded(child: _StatCard(
-                icon: Icons.notifications_active_rounded,
-                value: '${stats['unreadNotifications'] ?? 0}',
-                label: 'Unread Reminders',
-                color: AppColors.accent,
-                onTap: () => context.go('/student-alerts'),
-              )),
-              const SizedBox(width: 12),
-              Expanded(child: _StatCard(
-                icon: Icons.assignment_outlined,
-                value: '${stats['pendingAssignments'] ?? 0}',
-                label: 'Pending Assignment',
-                color: AppColors.primary,
-                onTap: () => context.push('/student/assignments'),
-              )),
-            ],
-          ),
-        ),
-
-        // ─── Pinned Notices ───────────────────────────────────────────────
-        if (pinnedReminders.isNotEmpty) ...[
-          _SectionHeader(title: '📌 Pinned Notices', onSeeAll: () => context.go('/student-alerts')),
-          ...pinnedReminders.map((r) => Slidable(
-            key: ValueKey('pinned_${r.id}'),
-            endActionPane: ActionPane(
-              motion: const ScrollMotion(),
+        return Center(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 1200),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SlidableAction(
-                  onPressed: (_) {
-                    if (r.notificationId != null) {
-                      ref.read(notificationProvider.notifier).deleteNotification(r.notificationId!);
-                    }
-                  },
-                  backgroundColor: AppColors.error,
-                  foregroundColor: Colors.white,
-                  icon: Icons.delete_rounded,
-                  label: 'Delete',
+                // ─── Stats Row ────────────────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.all(AppDimens.paddingMd),
+                  child: GridView.count(
+                    crossAxisCount: isMobile ? 2 : 3,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: isMobile ? 1.6 : 2.2,
+                    children: [
+                      _StatCard(
+                        icon: Icons.notifications_active_rounded,
+                        value: '${stats['unreadNotifications'] ?? 0}',
+                        label: 'Unread Reminders',
+                        color: AppColors.accent,
+                        onTap: () => context.go('/student-alerts'),
+                      ),
+                      _StatCard(
+                        icon: Icons.assignment_outlined,
+                        value: '${stats['pendingAssignments'] ?? 0}',
+                        label: 'Pending Tasks',
+                        color: AppColors.primary,
+                        onTap: () => context.push('/student/assignments'),
+                      ),
+                      if (!isMobile)
+                        _StatCard(
+                          icon: Icons.check_circle_outline_rounded,
+                          value: '${stats['completedAssignments'] ?? 0}',
+                          label: 'Completed',
+                          color: const Color(0xFF00897B),
+                          onTap: () => context.push('/student/assignments'),
+                        ),
+                    ],
+                  ),
                 ),
+
+                // ─── Pinned Notices ───────────────────────────────────────────────
+                if (pinnedReminders.isNotEmpty) ...[
+                  _SectionHeader(title: '📌 Pinned Notices', onSeeAll: () => context.go('/student-alerts')),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: listCrossCount,
+                      childAspectRatio: listRatio,
+                      mainAxisSpacing: 0,
+                      crossAxisSpacing: 12,
+                    ),
+                    itemCount: pinnedReminders.length,
+                    itemBuilder: (ctx, i) {
+                      final r = pinnedReminders[i];
+                      return Slidable(
+                        key: ValueKey('pinned_${r.id}'),
+                        endActionPane: ActionPane(
+                          motion: const ScrollMotion(),
+                          children: [
+                            SlidableAction(
+                              onPressed: (_) {
+                                if (r.notificationId != null) {
+                                  ref.read(notificationProvider.notifier).deleteNotification(r.notificationId!);
+                                }
+                              },
+                              backgroundColor: AppColors.error,
+                              foregroundColor: Colors.white,
+                              icon: Icons.delete_rounded,
+                              label: 'Delete',
+                            ),
+                          ],
+                        ),
+                        child: _ReminderCard(
+                          reminder: r, 
+                          isSelected: selectedReminders.contains(r.notificationId),
+                          isSelectionMode: isSelectionMode,
+                          onSelect: () => onToggle(r.notificationId!),
+                          onTap: () {
+                            if (isSelectionMode) {
+                              onToggle(r.notificationId!);
+                            } else {
+                              context.push('/student/reminder/${r.id}');
+                            }
+                          }
+                        ),
+                      );
+                    },
+                  ),
+                ],
+
+                // ─── Latest Reminders ─────────────────────────────────────────────
+                _SectionHeader(
+                  title: '🔔 Latest Reminders', 
+                  onSeeAll: () => context.go('/student-alerts'),
+                  trailing: TextButton.icon(
+                    onPressed: onToggleSelection,
+                    icon: Icon(isSelectionMode ? Icons.done_all_rounded : Icons.checklist_rounded, size: 16),
+                    label: Text(isSelectionMode ? 'Done' : 'Select', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ),
+                if (latestReminders.isEmpty)
+                  const EmptyStateWidget(icon: Icons.notifications_none, message: 'No reminders yet')
+                else
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: listCrossCount,
+                      childAspectRatio: listRatio,
+                      mainAxisSpacing: 0,
+                      crossAxisSpacing: 12,
+                    ),
+                    itemCount: latestReminders.length,
+                    itemBuilder: (ctx, i) {
+                      final r = latestReminders[i];
+                      return Slidable(
+                        key: ValueKey(r.id),
+                        enabled: !isSelectionMode,
+                        endActionPane: ActionPane(
+                          motion: const ScrollMotion(),
+                          children: [
+                            SlidableAction(
+                              onPressed: (_) {
+                                if (r.notificationId != null) {
+                                  ref.read(notificationProvider.notifier).deleteNotification(r.notificationId!);
+                                }
+                              },
+                              backgroundColor: AppColors.error,
+                              foregroundColor: Colors.white,
+                              icon: Icons.delete_rounded,
+                              label: 'Delete',
+                            ),
+                          ],
+                        ),
+                        child: _ReminderCard(
+                          reminder: r, 
+                          isSelected: selectedReminders.contains(r.notificationId),
+                          isSelectionMode: isSelectionMode,
+                          onSelect: () => onToggle(r.notificationId!),
+                          onTap: () {
+                            if (isSelectionMode) {
+                              onToggle(r.notificationId!);
+                            } else {
+                              context.push('/student/reminder/${r.id}');
+                            }
+                          }
+                        ),
+                      );
+                    },
+                  ),
+
+                // ─── Upcoming Assignments ─────────────────────────────────────────
+                _SectionHeader(title: '📚 Upcoming Assignments', onSeeAll: null),
+                if (upcomingAssignments.isEmpty)
+                  const EmptyStateWidget(icon: Icons.assignment_outlined, message: 'No upcoming assignments')
+                else
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: listCrossCount,
+                      childAspectRatio: listRatio,
+                      mainAxisSpacing: 0,
+                      crossAxisSpacing: 12,
+                    ),
+                    itemCount: upcomingAssignments.length,
+                    itemBuilder: (ctx, i) => _AssignmentCard(
+                      assignment: upcomingAssignments[i], 
+                      onTap: () => context.push('/student/assignment/${upcomingAssignments[i].id}'),
+                    ),
+                  ),
+
+                const SizedBox(height: 80),
               ],
             ),
-            child: _ReminderCard(
-              reminder: r, 
-              isSelected: selectedReminders.contains(r.notificationId),
-              isSelectionMode: isSelectionMode,
-              onSelect: () => onToggle(r.notificationId!),
-              onTap: () {
-                if (isSelectionMode) {
-                  onToggle(r.notificationId!);
-                } else {
-                  context.push('/student/reminder/${r.id}');
-                }
-              }
-            ),
-          )),
-        ],
-
-        // ─── Latest Reminders ─────────────────────────────────────────────
-        _SectionHeader(
-          title: '🔔 Latest Reminders', 
-          onSeeAll: () => context.go('/student-alerts'),
-          trailing: TextButton.icon(
-            onPressed: onToggleSelection,
-            icon: Icon(isSelectionMode ? Icons.done_all_rounded : Icons.checklist_rounded, size: 16),
-            label: Text(isSelectionMode ? 'Done' : 'Select', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
           ),
-        ),
-        if (latestReminders.isEmpty)
-          const EmptyStateWidget(icon: Icons.notifications_none, message: 'No reminders yet')
-        else
-          ...latestReminders.map((r) => Slidable(
-            key: ValueKey(r.id),
-            enabled: !isSelectionMode,
-            endActionPane: ActionPane(
-              motion: const ScrollMotion(),
-              children: [
-                SlidableAction(
-                  onPressed: (_) {
-                    if (r.notificationId != null) {
-                      ref.read(notificationProvider.notifier).deleteNotification(r.notificationId!);
-                    }
-                  },
-                  backgroundColor: AppColors.error,
-                  foregroundColor: Colors.white,
-                  icon: Icons.delete_rounded,
-                  label: 'Delete',
-                ),
-              ],
-            ),
-            child: _ReminderCard(
-              reminder: r, 
-              isSelected: selectedReminders.contains(r.notificationId),
-              isSelectionMode: isSelectionMode,
-              onSelect: () => onToggle(r.notificationId!),
-              onTap: () {
-                if (isSelectionMode) {
-                  onToggle(r.notificationId!);
-                } else {
-                  context.push('/student/reminder/${r.id}');
-                }
-              }
-            ),
-          )),
-
-        // ─── Upcoming Assignments ─────────────────────────────────────────
-        _SectionHeader(title: '📚 Upcoming Assignments', onSeeAll: null),
-        if (upcomingAssignments.isEmpty)
-          const EmptyStateWidget(icon: Icons.assignment_outlined, message: 'No upcoming assignments')
-        else
-          ...upcomingAssignments.map((a) => _AssignmentCard(assignment: a, onTap: () => context.push('/student/assignment/${a.id}'))),
-
-        const SizedBox(height: 80),
-      ],
+        );
+      },
     );
   }
 }
@@ -454,21 +522,24 @@ class _StatCard extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: color.withOpacity(0.2), 
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [BoxShadow(color: color.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
               ),
-              child: Icon(icon, color: color, size: 24),
+              child: FittedBox(child: Icon(icon, color: color, size: 24)),
             ),
-            const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start, 
-              children: [
-                Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: color, fontFamily: 'Inter', letterSpacing: -0.5)),
-                Text(label, style: TextStyle(fontSize: 12, color: color.withOpacity(0.8), fontFamily: 'Inter', fontWeight: FontWeight.w600)),
-              ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start, 
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  FittedBox(fit: BoxFit.scaleDown, child: Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: color, fontFamily: 'Inter', letterSpacing: -0.5))),
+                  FittedBox(fit: BoxFit.scaleDown, child: Text(label, style: TextStyle(fontSize: 10, color: color.withOpacity(0.8), fontFamily: 'Inter', fontWeight: FontWeight.w600))),
+                ],
+              ),
             ),
           ],
         ),
@@ -599,22 +670,26 @@ class _ReminderCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(Icons.person_outline_rounded, size: 14, color: Colors.black.withOpacity(0.4)),
-                        const SizedBox(width: 4),
-                        Text(
-                          reminder.createdBy?.name ?? 'Admin',
-                          style: TextStyle(fontSize: 12, color: Colors.black.withOpacity(0.5), fontFamily: 'Inter', fontWeight: FontWeight.w500),
-                        ),
-                        const SizedBox(width: 12),
-                        Icon(Icons.access_time_rounded, size: 14, color: Colors.black.withOpacity(0.4)),
-                        const SizedBox(width: 4),
-                        Text(
-                          DateFormat('d MMM').format(reminder.createdAt),
-                          style: TextStyle(fontSize: 12, color: Colors.black.withOpacity(0.5), fontFamily: 'Inter', fontWeight: FontWeight.w500),
-                        ),
-                      ],
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Row(
+                        children: [
+                          Icon(Icons.person_outline_rounded, size: 14, color: Colors.black.withOpacity(0.4)),
+                          const SizedBox(width: 4),
+                          Text(
+                            reminder.createdBy?.name ?? 'Admin',
+                            style: TextStyle(fontSize: 12, color: Colors.black.withOpacity(0.5), fontFamily: 'Inter', fontWeight: FontWeight.w500),
+                          ),
+                          const SizedBox(width: 12),
+                          Icon(Icons.access_time_rounded, size: 14, color: Colors.black.withOpacity(0.4)),
+                          const SizedBox(width: 4),
+                          Text(
+                            DateFormat('d MMM').format(reminder.createdAt),
+                            style: TextStyle(fontSize: 12, color: Colors.black.withOpacity(0.5), fontFamily: 'Inter', fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

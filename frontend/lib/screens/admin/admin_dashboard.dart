@@ -106,92 +106,111 @@ class _AdminDashContent extends StatelessWidget {
     final stats = data['stats'] ?? {};
     final readRate = data['readRate'] ?? '0';
 
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      // ─── KPI Grid ───────────────────────────────────────────────────────
-      Padding(
-        padding: const EdgeInsets.all(AppDimens.paddingMd),
-        child: GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 2.8,
-          children: [
-            _KpiCard(icon: Icons.people_rounded, label: 'Total Users', value: '${stats['totalUsers'] ?? 0}', color: const Color(0xFF7B1FA2)),
-            _KpiCard(icon: Icons.school_rounded, label: 'Students', value: '${stats['totalStudents'] ?? 0}', color: AppColors.primary),
-            _KpiCard(icon: Icons.notifications_rounded, label: 'Reminders Sent', value: '${stats['totalReminders'] ?? 0}', color: const Color(0xFF00897B)),
-            _KpiCard(icon: Icons.assignment_rounded, label: 'Assignments', value: '${stats['totalAssignments'] ?? 0}', color: AppColors.accent),
-          ],
-        ),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final isMobile = width < 600;
+        final isTablet = width >= 600 && width < 1024;
+        
+        final kpiCrossCount = isMobile ? 2 : (width < 900 ? 2 : 4);
+        final kpiRatio = isMobile ? 1.4 : (isTablet ? 1.8 : 2.0);
+        
+        final actionCrossCount = isMobile ? 2 : (isTablet ? 2 : 4);
+        final actionRatio = isMobile ? 2.0 : 2.5;
 
-      // ─── Read Rate Card ──────────────────────────────────────────────────
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [Color(0xFF1E88E5), Color(0xFF1976D2)],
-            ),
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(color: const Color(0xFF1976D2).withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6)),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(16)),
-                child: const Icon(Icons.analytics_rounded, color: Colors.white, size: 28),
+        return Center(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 1200),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              // ─── KPI Grid ───────────────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.all(AppDimens.paddingMd),
+                child: GridView.count(
+                  crossAxisCount: kpiCrossCount,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: kpiRatio,
+                  children: [
+                    _KpiCard(icon: Icons.people_rounded, label: 'Total Users', value: '${stats['totalUsers'] ?? 0}', color: const Color(0xFF7B1FA2)),
+                    _KpiCard(icon: Icons.school_rounded, label: 'Students', value: '${stats['totalStudents'] ?? 0}', color: AppColors.primary),
+                    _KpiCard(icon: Icons.notifications_rounded, label: 'Reminders Sent', value: '${stats['totalReminders'] ?? 0}', color: const Color(0xFF00897B)),
+                    _KpiCard(icon: Icons.assignment_rounded, label: 'Assignments', value: '${stats['totalAssignments'] ?? 0}', color: AppColors.accent),
+                  ],
+                ),
               ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start, 
-                children: [
-                  const Text('Engagement Rate', style: TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Inter', fontWeight: FontWeight.w600, letterSpacing: 0.5)),
-                  const SizedBox(height: 4),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      Text('$readRate', style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w800, fontFamily: 'Inter')),
-                      const Text('%', style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Inter')),
+
+              // ─── Read Rate Card ──────────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [Color(0xFF1E88E5), Color(0xFF1976D2)],
+                    ),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(color: const Color(0xFF1976D2).withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6)),
                     ],
                   ),
-                ],
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(16)),
+                        child: const Icon(Icons.analytics_rounded, color: Colors.white, size: 28),
+                      ),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start, 
+                        children: [
+                          const Text('Engagement Rate', style: TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Inter', fontWeight: FontWeight.w600, letterSpacing: 0.5)),
+                          const SizedBox(height: 4),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: [
+                              Text('$readRate', style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w800, fontFamily: 'Inter')),
+                              const Text('%', style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Inter')),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ],
+
+              // ─── Quick Actions ───────────────────────────────────────────────────
+              const Padding(padding: EdgeInsets.fromLTRB(16, 20, 16, 8), child: Text('Quick Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Inter'))),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: GridView.count(
+                  crossAxisCount: actionCrossCount,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: actionRatio,
+                  children: [
+                    _ActionBtn(icon: Icons.manage_accounts_rounded, label: 'Management', color: AppColors.primary, onTap: () => context.push('/admin-users')),
+                    _ActionBtn(icon: Icons.campaign_rounded, label: 'Announce', color: const Color(0xFF7B1FA2), onTap: () => context.push('/admin-announce')),
+                    _ActionBtn(icon: Icons.bar_chart_rounded, label: 'Analytics', color: const Color(0xFF00897B), onTap: () => context.push('/admin-analytics')),
+                    _ActionBtn(icon: Icons.class_rounded, label: 'Manage Classes', color: AppColors.accent, onTap: () => context.push('/admin-classes')),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 80),
+            ]),
           ),
-        ),
-      ),
-
-      // ─── Quick Actions ───────────────────────────────────────────────────
-      const Padding(padding: EdgeInsets.fromLTRB(16, 20, 16, 8), child: Text('Quick Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Inter'))),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 3.5,
-          children: [
-            _ActionBtn(icon: Icons.manage_accounts_rounded, label: 'Management', color: AppColors.primary, onTap: () => context.push('/admin-users')),
-            _ActionBtn(icon: Icons.campaign_rounded, label: 'Announce', color: const Color(0xFF7B1FA2), onTap: () => context.push('/admin-announce')),
-            _ActionBtn(icon: Icons.bar_chart_rounded, label: 'Analytics', color: const Color(0xFF00897B), onTap: () => context.push('/admin-analytics')),
-            _ActionBtn(icon: Icons.class_rounded, label: 'Manage Classes', color: AppColors.accent, onTap: () => context.push('/admin-classes')),
-          ],
-        ),
-      ),
-
-      const SizedBox(height: 80),
-    ]);
+        );
+      },
+    );
   }
 }
 
@@ -204,28 +223,32 @@ class _KpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
     decoration: BoxDecoration(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: color.withOpacity(0.05)),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: color.withOpacity(0.1)),
       boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
     ),
     child: Row(
       children: [
-        Container(
-          padding: const EdgeInsets.all(6), 
-          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), 
-          child: Icon(icon, color: color, size: 24)
+        Flexible(
+          flex: 2,
+          child: Container(
+            padding: const EdgeInsets.all(8), 
+            decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)), 
+            child: FittedBox(child: Icon(icon, color: color, size: 42)),
+          ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
         Expanded(
+          flex: 3,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start, 
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: color, fontFamily: 'Inter', letterSpacing: -0.5)),
-              Text(label, style: TextStyle(fontSize: 9, color: Colors.black.withOpacity(0.5), fontFamily: 'Inter', fontWeight: FontWeight.w700, letterSpacing: 0.1)),
+              FittedBox(fit: BoxFit.scaleDown, child: Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: color, fontFamily: 'Inter', letterSpacing: -1.0))),
+              FittedBox(fit: BoxFit.scaleDown, child: Text(label, style: TextStyle(fontSize: 11, color: Colors.black.withOpacity(0.6), fontFamily: 'Inter', fontWeight: FontWeight.w800, letterSpacing: 0.1))),
             ],
           ),
         ),
@@ -247,22 +270,32 @@ class _ActionBtn extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(18),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: Colors.white, 
-          borderRadius: BorderRadius.circular(14), 
-          border: Border.all(color: color.withOpacity(0.06)),
-          boxShadow: [BoxShadow(color: color.withOpacity(0.02), blurRadius: 4, offset: const Offset(0, 2))],
+          borderRadius: BorderRadius.circular(16), 
+          border: Border.all(color: color.withOpacity(0.1)),
+          boxShadow: [BoxShadow(color: color.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 4))],
         ),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-              child: Icon(icon, color: color, size: 28),
+            Flexible(
+              flex: 1,
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                child: FittedBox(child: Icon(icon, color: color, size: 48)),
+              ),
             ),
             const SizedBox(width: 12),
-            Expanded(child: Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: color, fontFamily: 'Inter'))),
+            Expanded(
+              flex: 3,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: color, fontFamily: 'Inter')),
+              ),
+            ),
             Icon(Icons.arrow_forward_ios_rounded, color: color.withOpacity(0.3), size: 12),
           ],
         ),

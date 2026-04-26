@@ -172,117 +172,174 @@ class _TeacherDashboardContentState extends State<_TeacherDashboardContent> {
       final recentReminders = allReminders.where((r) => r.title.toLowerCase().contains(_sentSearch.toLowerCase())).toList();
       final scheduledReminders = allScheduled.where((r) => r.title.toLowerCase().contains(_scheduledSearch.toLowerCase())).toList();
 
-      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // ─── Stats Row ───────────────────────────────────────────────────────
-        Padding(
-          padding: const EdgeInsets.all(AppDimens.paddingMd),
-          child: Row(children: [
-            Expanded(child: _StatCard(value: '${stats['totalReminders'] ?? 0}', label: 'Notices', icon: Icons.send_rounded, color: const Color(0xFF00897B))),
-            const SizedBox(width: 12),
-            Expanded(child: _StatCard(value: '${allAssignments.length}', label: 'Assignments', icon: Icons.assignment_rounded, color: AppColors.primary)),
-            const SizedBox(width: 12),
-            Expanded(child: _StatCard(value: '${stats['scheduledCount'] ?? 0}', label: 'Scheduled', icon: Icons.schedule_rounded, color: AppColors.accent)),
-          ]),
-        ),
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+          final isMobile = width < 600;
+          final isTablet = width >= 600 && width < 1024;
 
-        // ─── Quick Actions ───────────────────────────────────────────────────
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(children: [
-            Expanded(child: _QuickAction(icon: Icons.notifications_active_rounded, label: 'New Notice', color: AppColors.primary, onTap: () => context.go('/teacher-create'))),
-            const SizedBox(width: 12),
-            Expanded(child: _QuickAction(icon: Icons.assignment_add, label: 'New Task', color: AppColors.accent, onTap: () => context.go('/teacher-create/assignment'))),
-          ]),
-        ),
-        const SizedBox(height: 8),
-
-        // ─── Scheduled Notices ────────────────────────────────────────────────
-        if (allScheduled.isNotEmpty) ...[
-          _SectionHeader(
-            title: '📅 Scheduled Notices', 
-            onSearch: () => setState(() => _isSearchingScheduled = !_isSearchingScheduled),
-          ),
-          if (_isSearchingScheduled)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: TextField(
-                onChanged: (v) => setState(() => _scheduledSearch = v),
-                decoration: InputDecoration(
-                  hintText: 'Search scheduled...',
-                  prefixIcon: const Icon(Icons.search, size: 18),
-                  isDense: true,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          final statsCrossCount = isMobile ? 2 : (isTablet ? 3 : 3);
+          final actionCrossCount = isMobile ? 2 : (isTablet ? 2 : 2);
+          
+          return Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                // ─── Stats Row ───────────────────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.all(AppDimens.paddingMd),
+                  child: GridView.count(
+                    crossAxisCount: statsCrossCount,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: isMobile ? 1.4 : 1.8,
+                    children: [
+                      _StatCard(value: '${stats['totalReminders'] ?? 0}', label: 'Notices', icon: Icons.send_rounded, color: const Color(0xFF00897B)),
+                      _StatCard(value: '${allAssignments.length}', label: 'Assignments', icon: Icons.assignment_rounded, color: AppColors.primary),
+                      _StatCard(value: '${stats['scheduledCount'] ?? 0}', label: 'Scheduled', icon: Icons.schedule_rounded, color: AppColors.accent),
+                    ],
+                  ),
                 ),
-              ),
-            ),
-          if (scheduledReminders.isEmpty)
-            const Padding(padding: EdgeInsets.all(16), child: Text('No matching scheduled notices', style: TextStyle(color: AppColors.textHint)))
-          else
-            ...scheduledReminders.map((r) => _ReminderRow(
-              reminder: r, 
-              onTap: () => {}, 
-            )),
-        ],
 
-        // ─── Recent Sent Notices ────────────────────────────────────────────────
-        _SectionHeader(
-          title: 'Recent Sent Notices', 
-          action: 'View all', 
-          onAction: () => context.go('/teacher-scheduled'),
-          onSearch: () => setState(() => _isSearchingSent = !_isSearchingSent),
-        ),
-        if (_isSearchingSent)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: TextField(
-              onChanged: (v) => setState(() => _sentSearch = v),
-              decoration: InputDecoration(
-                hintText: 'Search sent notices...',
-                prefixIcon: const Icon(Icons.search, size: 18),
-                isDense: true,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-          ),
-        if (recentReminders.isEmpty)
-          const EmptyStateWidget(icon: Icons.notifications_none, message: 'No reminders found')
-        else
-          ...recentReminders.map((r) => _ReminderRow(
-            reminder: r, 
-            onTap: () => context.push('/teacher-receipts/${r.id}'),
-          )),
+                // ─── Quick Actions ───────────────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: GridView.count(
+                    crossAxisCount: actionCrossCount,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: isMobile ? 2.2 : 3.5,
+                    children: [
+                      _QuickAction(icon: Icons.notifications_active_rounded, label: 'New Notice', color: AppColors.primary, onTap: () => context.go('/teacher-create')),
+                      _QuickAction(icon: Icons.assignment_add, label: 'New Task', color: AppColors.accent, onTap: () => context.go('/teacher-create/assignment')),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
 
-        // ─── Assignments ──────────────────────────────────────────────
-        _SectionHeader(
-          title: 'Active Assignments', 
-          onSearch: () => setState(() => _isSearchingAssignments = !_isSearchingAssignments),
-        ),
-        if (_isSearchingAssignments)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: TextField(
-              onChanged: (v) => setState(() => _assignmentSearch = v),
-              decoration: InputDecoration(
-                hintText: 'Search assignments...',
-                prefixIcon: const Icon(Icons.search, size: 18),
-                isDense: true,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-          ),
-        if (assignments.isEmpty)
-          const EmptyStateWidget(icon: Icons.event_available, message: 'No assignments found')
-        else
-          ...assignments.map((a) => _DeadlineRow(
-            assignment: a, 
-            onTap: () {
-              final path = '/teacher-assignment/${a.id}';
-              context.push(path);
-            },
-          )),
+                // ─── Scheduled Notices ────────────────────────────────────────────────
+                if (allScheduled.isNotEmpty) ...[
+                  _SectionHeader(
+                    title: '📅 Scheduled Notices', 
+                    onSearch: () => setState(() => _isSearchingScheduled = !_isSearchingScheduled),
+                  ),
+                  if (_isSearchingScheduled)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: TextField(
+                        onChanged: (v) => setState(() => _scheduledSearch = v),
+                        decoration: InputDecoration(
+                          hintText: 'Search scheduled...',
+                          prefixIcon: const Icon(Icons.search, size: 18),
+                          isDense: true,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                    ),
+                  
+                  if (scheduledReminders.isEmpty)
+                    const Padding(padding: EdgeInsets.all(16), child: Text('No matching scheduled notices', style: TextStyle(color: AppColors.textHint)))
+                  else
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: isMobile ? 1 : 2,
+                        childAspectRatio: isMobile ? 4.5 : 5.0,
+                        mainAxisSpacing: 0,
+                        crossAxisSpacing: 12,
+                      ),
+                      itemCount: scheduledReminders.length,
+                      itemBuilder: (ctx, i) => _ReminderRow(reminder: scheduledReminders[i], onTap: () => {}),
+                    ),
+                ],
 
-        const SizedBox(height: 80),
-      ]);
+                // ─── Recent Sent Notices ────────────────────────────────────────────────
+                _SectionHeader(
+                  title: 'Recent Sent Notices', 
+                  action: 'View all', 
+                  onAction: () => context.go('/teacher-scheduled'),
+                  onSearch: () => setState(() => _isSearchingSent = !_isSearchingSent),
+                ),
+                if (_isSearchingSent)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: TextField(
+                      onChanged: (v) => setState(() => _sentSearch = v),
+                      decoration: InputDecoration(
+                        hintText: 'Search sent notices...',
+                        prefixIcon: const Icon(Icons.search, size: 18),
+                        isDense: true,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ),
+                if (recentReminders.isEmpty)
+                  const EmptyStateWidget(icon: Icons.notifications_none, message: 'No reminders found')
+                else
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: isMobile ? 1 : 2,
+                      childAspectRatio: isMobile ? 4.5 : 5.0,
+                      mainAxisSpacing: 0,
+                      crossAxisSpacing: 12,
+                    ),
+                    itemCount: recentReminders.length,
+                    itemBuilder: (ctx, i) => _ReminderRow(
+                      reminder: recentReminders[i], 
+                      onTap: () => context.push('/teacher-receipts/${recentReminders[i].id}'),
+                    ),
+                  ),
+
+                // ─── Assignments ──────────────────────────────────────────────
+                _SectionHeader(
+                  title: 'Active Assignments', 
+                  onSearch: () => setState(() => _isSearchingAssignments = !_isSearchingAssignments),
+                ),
+                if (_isSearchingAssignments)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: TextField(
+                      onChanged: (v) => setState(() => _assignmentSearch = v),
+                      decoration: InputDecoration(
+                        hintText: 'Search assignments...',
+                        prefixIcon: const Icon(Icons.search, size: 18),
+                        isDense: true,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ),
+                if (assignments.isEmpty)
+                  const EmptyStateWidget(icon: Icons.event_available, message: 'No assignments found')
+                else
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: isMobile ? 1 : 2,
+                      childAspectRatio: isMobile ? 4.5 : 5.0,
+                      mainAxisSpacing: 0,
+                      crossAxisSpacing: 12,
+                    ),
+                    itemCount: assignments.length,
+                    itemBuilder: (ctx, i) => _DeadlineRow(
+                      assignment: assignments[i], 
+                      onTap: () => context.push('/teacher-assignment/${assignments[i].id}'),
+                    ),
+                  ),
+
+                const SizedBox(height: 80),
+              ]),
+            ),
+          );
+        },
+      );
     } catch (e) {
       return Padding(
         padding: const EdgeInsets.all(32),
