@@ -83,7 +83,7 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
           slivers: [
             // ─── App Bar ──────────────────────────────────────────────────
             SliverAppBar(
-              expandedHeight: 160,
+              expandedHeight: 180,
               floating: false,
               pinned: true,
               elevation: 0,
@@ -103,56 +103,86 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFF0D47A1), Color(0xFF1976D2)],
+                      colors: [Color(0xFF1A237E), Color(0xFF3949AB), Color(0xFF5C6BC0)],
                     ),
                   ),
-                  child: SafeArea(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppDimens.paddingMd),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        right: -30,
+                        top: -20,
+                        child: CircleAvatar(radius: 80, backgroundColor: Colors.white.withOpacity(0.05)),
+                      ),
+                      SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppDimens.paddingMd),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    _greeting(),
-                                    style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14, fontFamily: 'Inter'),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _greeting(),
+                                        style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14, fontFamily: 'Inter', fontWeight: FontWeight.w500),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      authState.when(
+                                        data: (user) => Text(
+                                          user?.name ?? 'Student', 
+                                          style: const TextStyle(
+                                            color: Colors.white, 
+                                            fontSize: 26, 
+                                            fontWeight: FontWeight.w800, 
+                                            fontFamily: 'Inter',
+                                            letterSpacing: -0.5,
+                                          )
+                                        ),
+                                        loading: () => const Text('Loading...', style: TextStyle(color: Colors.white, fontSize: 26)),
+                                        error: (_, __) => const SizedBox(),
+                                      ),
+                                    ],
                                   ),
-                                  authState.when(
-                                    data: (user) => Text(user?.name ?? 'Student', style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700, fontFamily: 'Inter')),
-                                    loading: () => const Text('Loading...', style: TextStyle(color: Colors.white, fontSize: 22)),
-                                    error: (_, __) => const SizedBox(),
+                                  GestureDetector(
+                                    onTap: () => context.go('/student-alerts'),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.12), 
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(color: Colors.white.withOpacity(0.2)),
+                                      ),
+                                      child: const Icon(Icons.notifications_none_rounded, color: Colors.white),
+                                    ),
                                   ),
                                 ],
                               ),
-                              GestureDetector(
-                                onTap: () => context.go('/student-alerts'),
-                                child: Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(12)),
-                                  child: const Icon(Icons.search_rounded, color: Colors.white),
+                              const SizedBox(height: 12),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  DateFormat('EEEE, d MMMM').format(DateTime.now()),
+                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontFamily: 'Inter', fontWeight: FontWeight.w600),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            DateFormat('EEEE, d MMMM').format(DateTime.now()),
-                            style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13, fontFamily: 'Inter'),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ),
-              title: const Text('CampusSync', style: TextStyle(color: Colors.white, fontFamily: 'Inter')),
-              backgroundColor: AppColors.primary,
+              title: const Text('Department Hub', style: TextStyle(color: Colors.white, fontFamily: 'Inter', fontWeight: FontWeight.w700)),
+              backgroundColor: const Color(0xFF1A237E),
             ),
 
             // ─── Category Filter ───────────────────────────────────────────
@@ -406,26 +436,40 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(AppDimens.radiusLg),
+      borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-          border: Border.all(color: color.withOpacity(0.2)),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [color.withOpacity(0.15), color.withOpacity(0.05)],
+          ),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withOpacity(0.2), width: 1.5),
+          boxShadow: [
+            BoxShadow(color: color.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+          ],
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
-              child: Icon(icon, color: color, size: 20),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.2), 
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [BoxShadow(color: color.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
+              ),
+              child: Icon(icon, color: color, size: 24),
             ),
-            const SizedBox(width: 12),
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: color, fontFamily: 'Inter')),
-              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontFamily: 'Inter')),
-            ]),
+            const SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start, 
+              children: [
+                Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: color, fontFamily: 'Inter', letterSpacing: -0.5)),
+                Text(label, style: TextStyle(fontSize: 12, color: color.withOpacity(0.8), fontFamily: 'Inter', fontWeight: FontWeight.w600)),
+              ],
+            ),
           ],
         ),
       ),
@@ -485,18 +529,27 @@ class _ReminderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final priorityColor = _priorityColor(reminder.priority);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimens.radiusLg),
+        borderRadius: BorderRadius.circular(24),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.all(16),
+          duration: const Duration(milliseconds: 250),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primaryContainer.withOpacity(0.3) : Colors.white,
-            borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-            border: Border.all(color: isSelected ? AppColors.primary : AppColors.divider),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))],
+            color: isSelected ? AppColors.primary.withOpacity(0.08) : Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isSelected ? AppColors.primary : Colors.black.withOpacity(0.05),
+              width: isSelected ? 2 : 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -506,37 +559,68 @@ class _ReminderCard extends StatelessWidget {
                   value: isSelected, 
                   onChanged: (_) => onSelect?.call(),
                   activeColor: AppColors.primary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                 ),
                 const SizedBox(width: 8),
               ],
               Container(
-                width: 4,
-                height: 48,
-                decoration: BoxDecoration(color: priorityColor, borderRadius: BorderRadius.circular(2)),
+                width: 6,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: priorityColor, 
+                  borderRadius: BorderRadius.circular(3),
+                  boxShadow: [BoxShadow(color: priorityColor.withOpacity(0.3), blurRadius: 4, offset: const Offset(0, 2))],
+                ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        PriorityBadge(priority: reminder.priority),
-                        if (reminder.isPinned) ...[
-                          const SizedBox(width: 6),
-                          const Icon(Icons.push_pin_rounded, size: 14, color: AppColors.accent),
-                        ],
+                        _ModernPriorityBadge(priority: reminder.priority),
+                        const Spacer(),
+                        if (reminder.isPinned)
+                          const Icon(Icons.push_pin_rounded, size: 16, color: Color(0xFFFFA000)),
                       ],
                     ),
-                    const SizedBox(height: 6),
-                    Text(reminder.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, fontFamily: 'Inter', color: AppColors.textPrimary), maxLines: 2, overflow: TextOverflow.ellipsis),
-                    const SizedBox(height: 4),
-                    Text('${reminder.createdBy?.name ?? 'Unknown'} • ${DateFormat('d MMM').format(reminder.createdAt)}', style: const TextStyle(fontSize: 12, color: AppColors.textHint, fontFamily: 'Inter')),
+                    const SizedBox(height: 10),
+                    Text(
+                      reminder.title, 
+                      style: const TextStyle(
+                        fontSize: 16, 
+                        fontWeight: FontWeight.w700, 
+                        fontFamily: 'Inter', 
+                        color: Color(0xFF1A1F36),
+                        letterSpacing: -0.2,
+                      ),
+                      maxLines: 2, 
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.person_outline_rounded, size: 14, color: Colors.black.withOpacity(0.4)),
+                        const SizedBox(width: 4),
+                        Text(
+                          reminder.createdBy?.name ?? 'Admin',
+                          style: TextStyle(fontSize: 12, color: Colors.black.withOpacity(0.5), fontFamily: 'Inter', fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(width: 12),
+                        Icon(Icons.access_time_rounded, size: 14, color: Colors.black.withOpacity(0.4)),
+                        const SizedBox(width: 4),
+                        Text(
+                          DateFormat('d MMM').format(reminder.createdAt),
+                          style: TextStyle(fontSize: 12, color: Colors.black.withOpacity(0.5), fontFamily: 'Inter', fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
-              if (!isSelectionMode) const Icon(Icons.chevron_right_rounded, color: AppColors.textHint),
+              if (!isSelectionMode) 
+                Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.black.withOpacity(0.2)),
             ],
           ),
         ),
@@ -544,14 +628,45 @@ class _ReminderCard extends StatelessWidget {
     );
   }
 
-  Color _priorityColor(String priority) {
-    switch (priority) {
-      case 'urgent': return AppColors.priorityUrgent;
-      case 'important': return AppColors.priorityImportant;
-      default: return AppColors.priorityNormal;
+  Color _priorityColor(String p) {
+    switch (p.toLowerCase()) {
+      case 'urgent': return const Color(0xFFE53935);
+      case 'important': return const Color(0xFFFB8C00);
+      default: return const Color(0xFF43A047);
     }
   }
 }
+
+class _ModernPriorityBadge extends StatelessWidget {
+  final String priority;
+  const _ModernPriorityBadge({required this.priority});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _priorityColor(priority);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        priority.toUpperCase(),
+        style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.5, fontFamily: 'Inter'),
+      ),
+    );
+  }
+
+  Color _priorityColor(String p) {
+    switch (p.toLowerCase()) {
+      case 'urgent': return const Color(0xFFE53935);
+      case 'important': return const Color(0xFFFB8C00);
+      default: return const Color(0xFF43A047);
+    }
+  }
+}
+
+
 
 class _AssignmentCard extends StatelessWidget {
   final AssignmentModel assignment;

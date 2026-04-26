@@ -20,29 +20,15 @@ class AdminDashboard extends ConsumerWidget {
         child: CustomScrollView(
           slivers: [
             SliverAppBar(
-              expandedHeight: 150,
+              expandedHeight: 200,
               pinned: true,
-              flexibleSpace: FlexibleSpaceBar(
-                background: Container(
-                  decoration: const BoxDecoration(gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF4A148C), Color(0xFF7B1FA2)])),
-                  child: SafeArea(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppDimens.paddingMd),
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.end, children: [
-                        const Text('HOD Panel', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2, fontFamily: 'Inter')),
-                        const Text('Dr. Bhagyashree Dhakulkar', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900, fontFamily: 'Inter', letterSpacing: -0.5)),
-                        const Text('Artificial Intelligence and Data Science', style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w500, fontFamily: 'Inter')),
-                        const SizedBox(height: 4),
-                        Text(DateFormat('EEEE, d MMMM').format(DateTime.now()), style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11, fontFamily: 'Inter')),
-                      ]),
-                    ),
-                  ),
-                ),
-              ),
+              elevation: 0,
+              backgroundColor: const Color(0xFF311B92),
+              title: const Text('HOD Executive Portal', style: TextStyle(color: Colors.white, fontFamily: 'Inter', fontWeight: FontWeight.w700, fontSize: 18)),
               actions: [
                 IconButton(
                   icon: const Icon(Icons.settings_rounded, color: Colors.white),
-                  onPressed: () => context.push('/student/settings'), // Using shared settings screen
+                  onPressed: () => context.push('/student/settings'),
                 ),
                 IconButton(
                   icon: const Icon(Icons.logout_rounded, color: Colors.white),
@@ -51,7 +37,51 @@ class AdminDashboard extends ConsumerWidget {
                     context.go('/login');
                   },
                 ),
+                const SizedBox(width: 8),
               ],
+              flexibleSpace: FlexibleSpaceBar(
+                background: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF311B92), Color(0xFF4527A0), Color(0xFF512DA8)],
+                    ),
+                  ),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        right: -40,
+                        top: -20,
+                        child: CircleAvatar(radius: 100, backgroundColor: Colors.white.withOpacity(0.05)),
+                      ),
+                      SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppDimens.paddingMd),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start, 
+                            mainAxisAlignment: MainAxisAlignment.end, 
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Text('DEPARTMENT HEAD', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2, fontFamily: 'Inter')),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text('Dr. Bhagyashree Dhakulkar', style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800, fontFamily: 'Inter', letterSpacing: -0.5)),
+                              const Text('Artificial Intelligence and Data Science', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600, fontFamily: 'Inter')),
+                              const SizedBox(height: 12),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
             SliverToBoxAdapter(
               child: dashAsync.when(
@@ -100,19 +130,43 @@ class _AdminDashContent extends StatelessWidget {
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [Color(0xFF1565C0), Color(0xFF1976D2)]),
-            borderRadius: BorderRadius.circular(AppDimens.radiusLg),
+            gradient: const LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [Color(0xFF1E88E5), Color(0xFF1976D2)],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(color: const Color(0xFF1976D2).withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6)),
+            ],
           ),
-          child: Row(children: [
-            const Icon(Icons.mark_email_read_rounded, color: Colors.white, size: 32),
-            const SizedBox(width: 16),
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('Notification Read Rate', style: TextStyle(color: Colors.white70, fontSize: 13, fontFamily: 'Inter')),
-              Text('$readRate%', style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700, fontFamily: 'Inter')),
-            ]),
-          ]),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(16)),
+                child: const Icon(Icons.analytics_rounded, color: Colors.white, size: 28),
+              ),
+              const SizedBox(width: 20),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start, 
+                children: [
+                  const Text('Engagement Rate', style: TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Inter', fontWeight: FontWeight.w600, letterSpacing: 0.5)),
+                  const SizedBox(height: 4),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text('$readRate', style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w800, fontFamily: 'Inter')),
+                      const Text('%', style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Inter')),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
 
@@ -139,22 +193,6 @@ class _AdminDashContent extends StatelessWidget {
       const SizedBox(height: 80),
     ]);
   }
-
-  Widget _ActionBtn({required IconData icon, required String label, required Color color, required VoidCallback onTap}) {
-    return Builder(builder: (context) => InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(AppDimens.radiusMd), border: Border.all(color: color.withOpacity(0.2))),
-        child: Row(children: [
-          Icon(icon, color: color, size: 18),
-          const SizedBox(width: 8),
-          Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: color, fontFamily: 'Inter')),
-        ]),
-      ),
-    ));
-  }
 }
 
 class _KpiCard extends StatelessWidget {
@@ -166,22 +204,71 @@ class _KpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(14),
+    padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-      border: Border.all(color: AppColors.divider),
-      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6)],
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: color.withOpacity(0.08)),
+      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
     ),
-    child: Row(children: [
-      Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: Icon(icon, color: color, size: 18)),
-      const SizedBox(width: 10),
-      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: color, fontFamily: 'Inter')),
-        Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textHint, fontFamily: 'Inter')),
-      ]),
-    ]),
+    child: Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10), 
+          decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(12)), 
+          child: Icon(icon, color: color, size: 28)
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start, 
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: color, fontFamily: 'Inter', letterSpacing: -0.5)),
+              Text(label, style: TextStyle(fontSize: 10, color: Colors.black.withOpacity(0.5), fontFamily: 'Inter', fontWeight: FontWeight.w700, letterSpacing: 0.2)),
+            ],
+          ),
+        ),
+      ],
+    ),
   );
+}
+
+class _ActionBtn extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  const _ActionBtn({required this.icon, required this.label, required this.color, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white, 
+          borderRadius: BorderRadius.circular(16), 
+          border: Border.all(color: color.withOpacity(0.08)),
+          boxShadow: [BoxShadow(color: color.withOpacity(0.03), blurRadius: 6, offset: const Offset(0, 2))],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: color, fontFamily: 'Inter'))),
+            Icon(Icons.arrow_forward_ios_rounded, color: color.withOpacity(0.3), size: 12),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _ActivityTile extends StatelessWidget {

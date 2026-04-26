@@ -34,11 +34,11 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
         child: CustomScrollView(
           slivers: [
             SliverAppBar(
-              expandedHeight: 150,
+              expandedHeight: 180,
               pinned: true,
               elevation: 0,
               backgroundColor: const Color(0xFF004D40),
-              title: const Text('CampusSync', style: TextStyle(color: Colors.white, fontFamily: 'Inter')),
+              title: const Text('Faculty Command Center', style: TextStyle(color: Colors.white, fontFamily: 'Inter', fontWeight: FontWeight.w700, fontSize: 18)),
               actions: [
                 IconButton(
                   icon: const Icon(Icons.settings_rounded, color: Colors.white),
@@ -51,26 +51,70 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
                     context.go('/login');
                   },
                 ),
+                const SizedBox(width: 8),
               ],
               flexibleSpace: FlexibleSpaceBar(
                 background: Container(
-                  decoration: const BoxDecoration(gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF004D40), Color(0xFF00897B)])),
-                  child: SafeArea(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppDimens.paddingMd),
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.end, children: [
-                        const Text('Teacher Portal', style: TextStyle(color: Colors.white70, fontSize: 13, fontFamily: 'Inter')),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            authState.whenData((user) => Text(user?.name ?? '', style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700, fontFamily: 'Inter'))).valueOrNull ?? const SizedBox(),
-                            Text(DateFormat('EEEE, d MMMM').format(DateTime.now()), style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13, fontFamily: 'Inter')),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                      ]),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF00332E), Color(0xFF004D40), Color(0xFF00695C)],
                     ),
+                  ),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        right: -20,
+                        top: -10,
+                        child: CircleAvatar(radius: 70, backgroundColor: Colors.white.withOpacity(0.04)),
+                      ),
+                      SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppDimens.paddingMd),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                'Academic Session 2026-27', 
+                                style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 12, fontFamily: 'Inter', fontWeight: FontWeight.w600, letterSpacing: 1),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  authState.whenData((user) => Text(
+                                    user?.name ?? 'Faculty Member', 
+                                    style: const TextStyle(
+                                      color: Colors.white, 
+                                      fontSize: 26, 
+                                      fontWeight: FontWeight.w800, 
+                                      fontFamily: 'Inter',
+                                      letterSpacing: -0.5,
+                                    )
+                                  )).valueOrNull ?? const SizedBox(),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.12),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: Colors.white.withOpacity(0.1)),
+                                    ),
+                                    child: Text(
+                                      DateFormat('d MMM').format(DateTime.now()), 
+                                      style: const TextStyle(color: Colors.white, fontSize: 12, fontFamily: 'Inter', fontWeight: FontWeight.w700)
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -265,14 +309,26 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(AppDimens.radiusMd), border: Border.all(color: color.withOpacity(0.2))),
-    child: Column(children: [
-      Icon(icon, color: color, size: 24),
-      const SizedBox(height: 8),
-      Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: color, fontFamily: 'Inter')),
-      Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, fontFamily: 'Inter'), textAlign: TextAlign.center),
-    ]),
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.white, 
+      borderRadius: BorderRadius.circular(20), 
+      border: Border.all(color: color.withOpacity(0.1)),
+      boxShadow: [BoxShadow(color: color.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
+          child: Icon(icon, color: color, size: 20),
+        ),
+        const SizedBox(height: 12),
+        Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: color, fontFamily: 'Inter', letterSpacing: -0.5)),
+        Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B), fontFamily: 'Inter', fontWeight: FontWeight.w600, letterSpacing: 0.2)),
+      ],
+    ),
   );
 }
 
@@ -286,16 +342,26 @@ class _QuickAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) => InkWell(
     onTap: onTap,
-    borderRadius: BorderRadius.circular(AppDimens.radiusLg),
+    borderRadius: BorderRadius.circular(16),
     child: Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(AppDimens.radiusLg), border: Border.all(color: AppColors.divider), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)]),
-      child: Row(children: [
-        Icon(icon, color: color, size: 22),
-        const SizedBox(width: 10),
-        Expanded(child: Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'Inter'))),
-        Icon(Icons.arrow_forward_rounded, color: color, size: 16),
-      ]),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [color, color.withOpacity(0.8)],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: color.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: Colors.white, size: 20),
+          const SizedBox(width: 8),
+          Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13, fontFamily: 'Inter')),
+        ],
+      ),
     ),
   );
 }
@@ -338,26 +404,49 @@ class _ReminderRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
     child: InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(AppDimens.radiusMd), border: Border.all(color: AppColors.divider)),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white, 
+          borderRadius: BorderRadius.circular(16), 
+          border: Border.all(color: Colors.black.withOpacity(0.05)),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4))],
+        ),
         child: Row(children: [
-          PriorityBadge(priority: reminder.priority),
-          const SizedBox(width: 10),
+          _ModernPriorityBadge(priority: reminder.priority),
+          const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(reminder.title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'Inter'), maxLines: 1, overflow: TextOverflow.ellipsis),
-            Text(DateFormat('d MMM · h:mm a').format(reminder.createdAt), style: const TextStyle(fontSize: 11, color: AppColors.textHint, fontFamily: 'Inter')),
+            Text(reminder.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, fontFamily: 'Inter', color: Color(0xFF1E293B)), maxLines: 1, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Icon(Icons.calendar_today_rounded, size: 10, color: Colors.black.withOpacity(0.4)),
+                const SizedBox(width: 4),
+                Text(DateFormat('d MMM, h:mm a').format(reminder.createdAt), style: TextStyle(fontSize: 11, color: Colors.black.withOpacity(0.4), fontFamily: 'Inter', fontWeight: FontWeight.w500)),
+              ],
+            ),
           ])),
+          const SizedBox(width: 8),
           GestureDetector(
             onTap: () => context.push('/teacher-receipts/${reminder.id}'),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(color: AppColors.primaryContainer, borderRadius: BorderRadius.circular(20)),
-              child: const Text('Receipts', style: TextStyle(fontSize: 11, color: AppColors.primary, fontFamily: 'Inter', fontWeight: FontWeight.w600)),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0D47A1).withOpacity(0.08), 
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF0D47A1).withOpacity(0.1)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.analytics_outlined, size: 12, color: Color(0xFF0D47A1)),
+                  const SizedBox(width: 4),
+                  Text('Insights', style: TextStyle(fontSize: 11, color: Color(0xFF0D47A1), fontFamily: 'Inter', fontWeight: FontWeight.w700)),
+                ],
+              ),
             ),
           ),
         ]),
@@ -401,5 +490,34 @@ class _DeadlineRow extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _ModernPriorityBadge extends StatelessWidget {
+  final String priority;
+  const _ModernPriorityBadge({required this.priority});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _priorityColor(priority);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        priority.toUpperCase(),
+        style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.5, fontFamily: 'Inter'),
+      ),
+    );
+  }
+
+  Color _priorityColor(String p) {
+    switch (p.toLowerCase()) {
+      case 'urgent': return const Color(0xFFE53935);
+      case 'important': return const Color(0xFFFB8C00);
+      default: return const Color(0xFF43A047);
+    }
   }
 }

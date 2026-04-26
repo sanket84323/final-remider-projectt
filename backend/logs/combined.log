@@ -1430,3 +1430,8 @@ SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 
 [2026-04-26 05:52:34] [32minfo[39m: 🚀 CampusSync Server running on port 5000 in development mode
 [2026-04-26 05:52:34] [32minfo[39m: 📅 Cron scheduler started
 [2026-04-26 05:52:35] [32minfo[39m: ✅ MongoDB Connected: ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 05:52:41] [32minfo[39m: ☁️  Cloudinary configured
+[2026-04-26 05:52:41] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 05:52:41] [32minfo[39m: 🚀 CampusSync Server running on port 5000 in development mode
+[2026-04-26 05:52:41] [32minfo[39m: 📅 Cron scheduler started
+[2026-04-26 05:52:42] [32minfo[39m: ✅ MongoDB Connected: ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
