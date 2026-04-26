@@ -45,11 +45,48 @@ const seed = async () => {
   });
 
   // ─── Teachers ──────────────────────────────────────────────────────────────
-  const teacherPw = 'Teacher@123';
-  const [teacher1, teacher2] = await User.create([
-    { name: 'Prof. Amit Verma', email: 'amit@aids.edu', passwordHash: teacherPw, role: 'teacher', department: csDept._id },
-    { name: 'Prof. Sarika Patil', email: 'sarika@aids.edu', passwordHash: teacherPw, role: 'teacher', department: csDept._id },
-  ]);
+  const teacherPw = 'faculty123';
+  const facultyList = [
+    { name: 'Dr Bhagyashree Dhakulkar', email: 'bhagyashree.dhakulkar@dypic.in' },
+    { name: 'Ankita Harshad Tidake', email: 'ankita.tidake@gmail.com' },
+    { name: 'Ashwini Aniket Shinde', email: 'ashwinis@dypic.in' },
+    { name: 'Vandana Vinayak Navale', email: 'vandana.vinayak@dypic.in' },
+    { name: 'Priyanka Shreyas Bhore', email: 'priyankabhore@dypic.in' },
+    { name: 'Payal Deshmukh', email: 'payaldeshmukh@dypic.in' },
+    { name: 'Hemangi Patil', email: 'hemangipatil@dypic.in' },
+    { name: 'Gopika Avinash Fattepurkar', email: 'gopikafattepurkar@dypic.in' },
+    { name: 'Supriya Survase', email: 'supriyasurvase@dypic.in' },
+    { name: 'Priyanka Waghmare', email: 'priyanka.waghmare@dypic.in' },
+    { name: 'Gauri Nikhil Thite', email: 'gaurirasane@dypic.in' },
+    { name: 'Divya Sharma', email: 'divya.sharma@dypic.in' },
+    { name: 'Amruta More', email: 'amrutamore@dypic.in' },
+    { name: 'Sushma Gunjal', email: 'sushmagunjal@dypic.in' },
+    { name: 'Vishakha Gaddam', email: 'vishakhagedam@dypic.in' },
+    { name: 'Neelam Jain', email: 'neelamjain@dypic.in' },
+    { name: 'Geeta Kodabagi', email: 'geetakodabagi@dypic.in' },
+    { name: 'Neha Verma', email: 'nehaverma@dypic.in' },
+    { name: 'Prof. Rupali Wagh', email: 'rupaliwagh@dypic.in' },
+    { name: 'Prof. Shweta Wankhade', email: 'swetawankhade@dypic.in' },
+    { name: 'Rachana Chapte', email: 'rachanachapte@dypic.in' },
+    { name: 'Varsha Babar', email: 'varshababar@dyoic.in' },
+    { name: 'Pooja Dehankar', email: 'poojadehankar@dypic.in' },
+    { name: 'Jayshree Suryawanshi', email: 'jayshreesuryawanshi@dypic.in' },
+    { name: 'Shubhangi Amol Sawant', email: 'shubhangi.sawant@dypic.in' },
+    { name: 'Urmila Mahesh Kotwal', email: 'urmila.kotwal@dypic.in' },
+    { name: 'Mauli Haridas Pawar', email: 'maulipawaar@dypic.in' },
+    { name: 'Akshay Somnath Burde', email: 'akshayburde@dypic.in' },
+    { name: 'Pratiraj Maruti Dalavi', email: 'pratirajdalavi@dypic.in' },
+    { name: 'Santosh Bhosle', email: 'santoshb21101983@gmail.com' }
+  ];
+
+  const teachers = await User.insertMany(facultyList.map(f => ({
+    ...f,
+    passwordHash: teacherPw,
+    role: 'teacher',
+    department: csDept._id
+  })));
+
+
 
   // ─── Students ──────────────────────────────────────────────────────────────
   const studentPw = 'Student@123';
@@ -63,7 +100,7 @@ const seed = async () => {
   // ─── Classes ─────────────────────────────────────────────────────────────────
   await Class.create({
     name: 'AIDS TE A', section: 'A', department: csDept._id, year: 3,
-    teacherIds: [teacher1._id, teacher2._id],
+    teacherIds: [], // Start with no assigned teachers
     studentIds: students.filter((s) => s.className === 'AIDS TE A').map((s) => s._id),
   });
 
@@ -86,7 +123,7 @@ const seed = async () => {
       category: 'exam',
       priority: 'urgent',
       status: 'sent',
-      createdBy: teacher1._id,
+      createdBy: hod._id,
       targetAudience: { type: 'class', className: 'AIDS TE A' }
     }
   ]);

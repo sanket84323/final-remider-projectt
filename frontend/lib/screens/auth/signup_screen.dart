@@ -128,7 +128,32 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               const Text('Student Registration ✨', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, fontFamily: 'Inter', color: AppColors.textPrimary, letterSpacing: -0.3)),
               const SizedBox(height: 8),
               const Text('Create your account to stay connected', style: TextStyle(fontSize: 15, color: AppColors.textSecondary, fontFamily: 'Inter')),
-              const SizedBox(height: 28),
+              const SizedBox(height: 12),
+              
+              // ─── Demo Credentials Button ──────────────────────────────────
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: () {
+                    _nameCtrl.text = 'Demo Student';
+                    _emailCtrl.text = 'student${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}@example.com';
+                    _passCtrl.text = 'password123';
+                    _confirmPassCtrl.text = 'password123';
+                    if (_classOptions.isNotEmpty) _selectedClassDropdown = _classOptions.first;
+                    _rollCtrl.text = 'DEMO-${DateTime.now().millisecondsSinceEpoch.toString().substring(10)}';
+                    setState(() {});
+                  },
+                  icon: const Icon(Icons.bolt_rounded, size: 18),
+                  label: const Text('Fill Demo Data', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600)),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.accent,
+                    backgroundColor: AppColors.accent.withOpacity(0.1),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
 
               // ─── Error Banner ─────────────────────────────────────────────
               if (_errorMessage != null) ...[

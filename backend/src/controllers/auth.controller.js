@@ -212,4 +212,42 @@ const getDemoCredentials = async (req, res) => {
   }
 };
 
-module.exports = { login, refreshToken, logout, forgotPassword, register, getDemoCredentials };
+// ─── Change Password ─────────────────────────────────────────────────────────
+const changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+      return errorResponse(res, 'Old and new passwords are required', 400);
+    }
+
+    // Find user and include passwordHash
+    const user = await User.findById(req.user._id).select('+passwordHash');
+    if (!user) {
+      return errorResponse(res, 'User not found', 404);
+    }
+
+    // Verify old password
+    const isMatch = await user.comparePassword(oldPassword);
+    if (!isMatch) {
+      return errorResponse(res, 'Incorrect current password', 401);
+    }
+
+    // Update password (pre-save hook will hash it)
+    user.passwordHash = newPassword;
+    await user.save();
+
+    // Log activity
+    await ActivityLog.create({
+      userId: user._id,
+      action: 'CHANGE_PASSWORD',
+      ipAddress: req.ip,
+    });
+
+    return successResponse(res, {}, 'Password updated successfully');
+  } catch (error) {
+    return errorResponse(res, error.message, 500);
+  }
+};
+
+module.exports = { login, refreshToken, logout, forgotPassword, register, getDemoCredentials, changePassword };

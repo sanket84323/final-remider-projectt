@@ -113,11 +113,13 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
               ],
               flexibleSpace: FlexibleSpaceBar(
                 background: Container(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFF1A237E), Color(0xFF3949AB), Color(0xFF5C6BC0)],
+                      colors: Theme.of(context).brightness == Brightness.dark
+                        ? [AppColors.darkSurface, AppColors.darkCard]
+                        : [const Color(0xFF1A237E), const Color(0xFF3949AB), const Color(0xFF5C6BC0)],
                     ),
                   ),
                   child: Stack(
@@ -217,11 +219,11 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
                         selected: isSelected,
                         onSelected: (val) => setState(() => _selectedCategory = cat['id'] as String),
                         label: Text(cat['label'] as String),
-                        avatar: Icon(cat['icon'] as IconData, size: 16, color: isSelected ? Colors.white : AppColors.primary),
-                        backgroundColor: Colors.white,
+                        avatar: Icon(cat['icon'] as IconData, size: 16, color: isSelected ? Colors.white : (Theme.of(context).brightness == Brightness.dark ? AppColors.primaryLight : AppColors.primary)),
+                        backgroundColor: Theme.of(context).cardColor,
                         selectedColor: AppColors.primary,
-                        labelStyle: TextStyle(color: isSelected ? Colors.white : AppColors.textPrimary, fontSize: 13, fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400, fontFamily: 'Inter'),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: isSelected ? AppColors.primary : AppColors.divider)),
+                        labelStyle: TextStyle(color: isSelected ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color, fontSize: 13, fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400, fontFamily: 'Inter'),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: isSelected ? AppColors.primary : Theme.of(context).dividerColor)),
                         showCheckmark: false,
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                       ),
@@ -400,7 +402,7 @@ class _DashboardContent extends ConsumerWidget {
                             if (isSelectionMode) {
                               onToggle(r.notificationId!);
                             } else {
-                              context.push('/student/reminder/${r.id}');
+                              context.push('/reminder-detail/${r.id}');
                             }
                           }
                         ),
@@ -622,15 +624,15 @@ class _ReminderCard extends StatelessWidget {
           duration: const Duration(milliseconds: 250),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary.withOpacity(0.08) : Colors.white,
+            color: isSelected ? AppColors.primary.withOpacity(0.15) : Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: isSelected ? AppColors.primary : Colors.black.withOpacity(0.05),
+              color: isSelected ? AppColors.primary : Theme.of(context).dividerColor,
               width: isSelected ? 2 : 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.2 : 0.03),
                 blurRadius: 15,
                 offset: const Offset(0, 8),
               ),
@@ -673,11 +675,11 @@ class _ReminderCard extends StatelessWidget {
                     const SizedBox(height: 10),
                     Text(
                       reminder.title, 
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16, 
                         fontWeight: FontWeight.w700, 
                         fontFamily: 'Inter', 
-                        color: Color(0xFF1A1F36),
+                        color: Theme.of(context).textTheme.titleLarge?.color,
                         letterSpacing: -0.2,
                       ),
                       maxLines: 2, 
@@ -774,10 +776,10 @@ class _AssignmentCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-            border: Border.all(color: AppColors.divider),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))],
+            border: Border.all(color: Theme.of(context).dividerColor),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.2 : 0.04), blurRadius: 8, offset: const Offset(0, 2))],
           ),
           child: Row(children: [
             Container(

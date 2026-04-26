@@ -122,6 +122,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/login',         builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/signup',          builder: (_, __) => const SignupScreen()),
       GoRoute(path: '/forgot-password', builder: (_, __) => const ForgotPasswordScreen()),
+      GoRoute(path: '/settings',        builder: (_, __) => const SettingsScreen()),
 
       // ─── Student Shell (4 tabs: Home | Alerts | Calendar | Profile) ────
       StatefulShellRoute.indexedStack(
@@ -137,7 +138,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                 GoRoute(path: 'reminder/:id',   builder: (_, s) => ReminderDetailScreen(reminderId: s.pathParameters['id']!)),
                 GoRoute(path: 'assignment/:id', builder: (_, s) => AssignmentSubmissionScreen(assignmentId: s.pathParameters['id']!)),
                 GoRoute(path: 'assignments',     builder: (_, __) => const StudentAssignmentScreen()),
-                GoRoute(path: 'settings',       builder: (_, __) => const SettingsScreen()),
               ],
             ),
           ]),
@@ -255,6 +255,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/admin-teacher-analytics/:id',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (_, s) => TeacherDetailScreen(teacherId: s.pathParameters['id']!),
+      ),
+
+      GoRoute(
+        path: '/reminder-detail/:id',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, s) => ReminderDetailScreen(reminderId: s.pathParameters['id']!),
       ),
 
       // ─── Admin Section (No Bottom Menu) ───────────────────────

@@ -46,7 +46,7 @@ class ProfileScreen extends ConsumerWidget {
                   ]),
                   const SizedBox(height: 16),
                   _ActionCard(items: [
-                    _ActionItem(icon: Icons.settings_outlined, label: 'Settings', onTap: () => context.push('/student/settings')),
+                    _ActionItem(icon: Icons.settings_outlined, label: 'Settings', onTap: () => context.push('/settings')),
                     _ActionItem(icon: Icons.notifications_outlined, label: 'Notification Preferences', onTap: () => _showNotificationPreferences(context, ref)),
                     _ActionItem(icon: Icons.lock_outlined, label: 'Change Password', onTap: () => _showChangePassword(context, ref)),
                     _ActionItem(icon: Icons.help_outline, label: 'Help & Support', onTap: () => _showHelpSupport(context, ref)),
@@ -203,7 +203,7 @@ class ProfileScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Row(children: [Icon(Icons.help_outline, color: AppColors.primary), SizedBox(width: 8), Text('Help & Support', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600))]),
-        content: const Text('For assistance, please contact the IT Helpdesk at:\n\n📧 support@campussync.edu\n📞 +1 (800) 123-4567\n\nOffice Hours: Mon-Fri, 9AM - 5PM', style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.5)),
+        content: const Text('For assistance, please contact the developer at:\n\n👤 Sanket Solanke\n📧 solankesanket8432@gmail.com\n\nI will respond as soon as possible.', style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.5)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close')),
         ],

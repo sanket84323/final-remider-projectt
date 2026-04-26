@@ -36,9 +36,13 @@ class AppColors {
   static const Color textHint = Color(0xFF9EA8B8);
 
   // ─── Dark Mode ───────────────────────────────────────────────────────────────
-  static const Color darkSurface = Color(0xFF0F1117);
-  static const Color darkCard = Color(0xFF1A1D2E);
-  static const Color darkCardAlt = Color(0xFF222438);
+  static const Color darkSurface = Color(0xFF0A0C10);
+  static const Color darkCard = Color(0xFF161B22);
+  static const Color darkCardAlt = Color(0xFF1F2937);
+  static const Color darkDivider = Color(0xFF30363D);
+  static const Color darkTextPrimary = Color(0xFFF0F6FC);
+  static const Color darkTextSecondary = Color(0xFF8B949E);
+  static const Color darkTextHint = Color(0xFF484F58);
 }
 
 class AppStrings {

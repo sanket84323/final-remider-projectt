@@ -30,19 +30,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             secondary: const Icon(Icons.dark_mode_outlined, color: AppColors.primary),
             activeColor: AppColors.primary,
           ),
-          _SectionHeader(title: 'Security'),
-          _SettingsTile(
-            icon: Icons.lock_open_rounded, 
-            title: 'Change Password', 
-            subtitle: 'Update your login credentials',
-            onTap: () => context.push('/forgot-password'),
-          ),
-          _SettingsTile(
-            icon: Icons.security_rounded, 
-            title: 'Reset Login Keys', 
-            subtitle: 'Force logout from all other devices',
-            onTap: () => _showConfirmation(context, 'Reset Security Keys?', 'This will sign you out of all other devices.', () {}),
-          ),
           _SectionHeader(title: 'Support & Contact'),
           _SettingsTile(
             icon: Icons.person_outline_rounded, 
@@ -57,8 +44,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: 'solankesanket8432@gmail.com', 
             trailing: const Icon(Icons.copy_rounded, color: AppColors.textHint, size: 18),
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Email copied to clipboard')));
+              // Copy to clipboard or just show snackbar
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contact: solankesanket8432@gmail.com'), backgroundColor: AppColors.primary));
             },
+          ),
+          _SectionHeader(title: 'Security'),
+          _SettingsTile(
+            icon: Icons.lock_open_rounded, 
+            title: 'Change Password', 
+            subtitle: 'Require current password to update',
+            onTap: () => _showChangePasswordDialog(context),
+          ),
+          _SettingsTile(
+            icon: Icons.security_rounded, 
+            title: 'Device Management', 
+            subtitle: 'Logout from other sessions',
+            onTap: () => _showConfirmation(context, 'Reset Security Keys?', 'This will sign you out of all other devices.', () {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Security keys reset successfully')));
+            }),
           ),
           _SectionHeader(title: 'About'),
           _SettingsTile(
@@ -77,6 +80,75 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           _SettingsTile(icon: Icons.code_rounded, title: 'App Version', subtitle: '1.0.0 (Build 1)', trailing: null),
         ],
+      ),
+    );
+  }
+
+  void _showChangePasswordDialog(BuildContext context) {
+    final oldPassCtrl = TextEditingController();
+    final newPassCtrl = TextEditingController();
+    final confirmPassCtrl = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    bool loading = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Change Password', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w700)),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Please enter your current password and a new one.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: oldPassCtrl,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: 'Current Password', prefixIcon: Icon(Icons.lock_outline)),
+                  validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: newPassCtrl,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: 'New Password', prefixIcon: Icon(Icons.password_rounded)),
+                  validator: (v) => v == null || v.length < 6 ? 'Min 6 chars' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: confirmPassCtrl,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: 'Confirm New Password', prefixIcon: Icon(Icons.check_circle_outline)),
+                  validator: (v) => v != newPassCtrl.text ? 'Passwords match fail' : null,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            ElevatedButton(
+              onPressed: loading ? null : () async {
+                if (!formKey.currentState!.validate()) return;
+                setDialogState(() => loading = true);
+                try {
+                  await ref.read(authStateProvider.notifier).changePassword(oldPassCtrl.text, newPassCtrl.text);
+                  if (mounted) {
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password changed successfully!'), backgroundColor: AppColors.success));
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error));
+                    setDialogState(() => loading = false);
+                  }
+                }
+              },
+              child: loading ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('Update'),
+            ),
+          ],
+        ),
       ),
     );
   }

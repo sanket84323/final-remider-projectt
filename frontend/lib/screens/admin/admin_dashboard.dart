@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:intl/intl.dart';
 import '../../core/constants/app_constants.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/app_providers.dart';
+import '../student/notification_list_screen.dart';
 
 class AdminDashboard extends ConsumerWidget {
   const AdminDashboard({super.key});
@@ -23,12 +25,23 @@ class AdminDashboard extends ConsumerWidget {
               expandedHeight: 200,
               pinned: true,
               elevation: 0,
-              backgroundColor: const Color(0xFF311B92),
+              backgroundColor: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSurface : const Color(0xFF311B92),
               title: const Text('HOD Executive Portal', style: TextStyle(color: Colors.white, fontFamily: 'Inter', fontWeight: FontWeight.w700, fontSize: 18)),
               actions: [
+                Consumer(builder: (context, ref, _) {
+                  final unread = ref.watch(unreadCountProvider);
+                  return IconButton(
+                    icon: Badge(
+                      isLabelVisible: unread > 0,
+                      label: Text('$unread', style: const TextStyle(fontSize: 10, color: Colors.white)),
+                      child: const Icon(Icons.notifications_outlined, color: Colors.white),
+                    ),
+                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => NotificationListScreen())),
+                  );
+                }),
                 IconButton(
                   icon: const Icon(Icons.settings_rounded, color: Colors.white),
-                  onPressed: () => context.push('/student/settings'),
+                  onPressed: () => context.push('/settings'),
                 ),
                 IconButton(
                   icon: const Icon(Icons.logout_rounded, color: Colors.white),
@@ -41,11 +54,13 @@ class AdminDashboard extends ConsumerWidget {
               ],
               flexibleSpace: FlexibleSpaceBar(
                 background: Container(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFF311B92), Color(0xFF4527A0), Color(0xFF512DA8)],
+                      colors: Theme.of(context).brightness == Brightness.dark
+                        ? [AppColors.darkSurface, AppColors.darkCard]
+                        : [const Color(0xFF311B92), const Color(0xFF4527A0), const Color(0xFF512DA8)],
                     ),
                   ),
                   child: Stack(
@@ -161,41 +176,63 @@ class _AdminDashContent extends StatelessWidget {
 
               const SizedBox(height: 32),
 
-              // ─── Overall Engagement (Non-Clickable) ──────────────────────────
+              // ─── Engagement Rates ──────────────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(32),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(32),
-                    border: Border.all(color: Colors.black.withOpacity(0.04)),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.015), blurRadius: 20, offset: const Offset(0, 10))],
-                  ),
-                  child: Column(children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(color: const Color(0xFF673AB7).withOpacity(0.08), shape: BoxShape.circle),
-                      child: const Icon(Icons.auto_graph_rounded, color: Color(0xFF673AB7), size: 32),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text('DEPARTMENT READ RATE', style: TextStyle(color: Colors.black38, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${stats['globalStats']?['readRate'] ?? 0}%', 
-                      style: const TextStyle(color: Color(0xFF1A237E), fontSize: 56, fontWeight: FontWeight.w900, fontFamily: 'Inter', letterSpacing: -2)
-                    ),
-                    const SizedBox(height: 12),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Text(
-                        _getEngagementMessage(stats['globalStats']?['readRate'] ?? 0),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.black.withOpacity(0.5), fontSize: 13, fontWeight: FontWeight.w500, height: 1.4)
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(28),
+                          border: Border.all(color: Colors.black.withOpacity(0.04)),
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 15, offset: const Offset(0, 8))],
+                        ),
+                        child: Column(children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(color: const Color(0xFF673AB7).withOpacity(0.08), shape: BoxShape.circle),
+                            child: const Icon(Icons.mark_email_read_rounded, color: Color(0xFF673AB7), size: 28),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text('READ RATE', style: TextStyle(color: Colors.black38, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${stats['globalStats']?['readRate'] ?? 0}%', 
+                            style: const TextStyle(color: Color(0xFF1A237E), fontSize: 42, fontWeight: FontWeight.w900, fontFamily: 'Inter', letterSpacing: -1)
+                          ),
+                        ]),
                       ),
                     ),
-                  ]),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(28),
+                          border: Border.all(color: Colors.black.withOpacity(0.04)),
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 15, offset: const Offset(0, 8))],
+                        ),
+                        child: Column(children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(color: const Color(0xFF00897B).withOpacity(0.08), shape: BoxShape.circle),
+                            child: const Icon(Icons.assignment_turned_in_rounded, color: Color(0xFF00897B), size: 28),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text('TASK COMPLETION', style: TextStyle(color: Colors.black38, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${stats['globalStats']?['submissionRate'] ?? 0}%', 
+                            style: const TextStyle(color: Color(0xFF1A237E), fontSize: 42, fontWeight: FontWeight.w900, fontFamily: 'Inter', letterSpacing: -1)
+                          ),
+                        ]),
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
@@ -361,3 +398,6 @@ String _getEngagementMessage(int rate) {
   if (rate <= 85) return 'Great job! The department is highly responsive to your broadcasts.';
   return 'Outstanding! Your communication strategy is world-class.';
 }
+
+
+

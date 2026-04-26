@@ -1980,3 +1980,166 @@ SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 
 [2026-04-26 14:45:08] [32minfo[39m: 🚀 CampusSync Server running on port 5000 in development mode
 [2026-04-26 14:45:08] [32minfo[39m: 📅 Cron scheduler started
 [2026-04-26 14:45:10] [32minfo[39m: ✅ MongoDB Connected: ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 14:45:15] [32minfo[39m: ☁️  Cloudinary configured
+[2026-04-26 14:45:16] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 14:45:16] [32minfo[39m: 🚀 CampusSync Server running on port 5000 in development mode
+[2026-04-26 14:45:16] [32minfo[39m: 📅 Cron scheduler started
+[2026-04-26 14:45:17] [32minfo[39m: ✅ MongoDB Connected: ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 14:46:18] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:09:16:18 +0000] "POST /api/auth/logout HTTP/1.1" 200 62 "http://localhost:49325/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 14:46:18] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:09:16:18 +0000] "GET /api/auth/demo-credentials HTTP/1.1" 304 - "http://localhost:49325/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 14:46:24] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:09:16:24 +0000] "POST /api/auth/login HTTP/1.1" 200 784 "http://localhost:49325/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 14:46:27] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:09:16:27 +0000] "GET /api/dashboard/teacher HTTP/1.1" 200 4409 "http://localhost:49325/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 14:47:03] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:09:17:03 +0000] "POST /api/auth/logout HTTP/1.1" 200 62 "http://localhost:49325/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 14:47:03] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:09:17:03 +0000] "GET /api/auth/demo-credentials HTTP/1.1" 304 - "http://localhost:49325/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 14:57:23] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:09:27:23 +0000] "POST /api/auth/login HTTP/1.1" 200 784 "http://localhost:49325/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 14:57:51] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:09:27:51 +0000] "GET /api/reminders/69edd443cc5a9e81281fba32/read-receipts HTTP/1.1" 200 580 "http://localhost:49325/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:16:23] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:09:46:23 +0000] "GET /api/users/me HTTP/1.1" 401 75 "http://localhost:49325/" "Mozilla/5.0 (Linux; Android 8.0.0; SM-G955U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36"
+[2026-04-26 15:16:24] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:09:46:24 +0000] "POST /api/auth/refresh HTTP/1.1" 200 519 "http://localhost:49325/" "Mozilla/5.0 (Linux; Android 8.0.0; SM-G955U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36"
+[2026-04-26 15:16:24] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:09:46:24 +0000] "GET /api/users/me HTTP/1.1" 200 557 "http://localhost:49325/" "Mozilla/5.0 (Linux; Android 8.0.0; SM-G955U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36"
+[2026-04-26 15:16:27] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:09:46:27 +0000] "GET /api/dashboard/teacher HTTP/1.1" 304 - "http://localhost:49325/" "Mozilla/5.0 (Linux; Android 8.0.0; SM-G955U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36"
+[2026-04-26 15:24:04] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:09:54:04 +0000] "GET /api/auth/demo-credentials HTTP/1.1" 200 245 "http://localhost:52609/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:24:12] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:09:54:12 +0000] "POST /api/auth/login HTTP/1.1" 200 784 "http://localhost:52609/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:24:18] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:09:54:18 +0000] "GET /api/dashboard/teacher HTTP/1.1" 200 4409 "http://localhost:52609/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:24:25] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:09:54:25 +0000] "GET /api/reminders/69edd443cc5a9e81281fba32 HTTP/1.1" 200 697 "http://localhost:52609/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:24:32] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:09:54:32 +0000] "PUT /api/reminders/69edd443cc5a9e81281fba32 HTTP/1.1" 200 514 "http://localhost:52609/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:24:33] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:09:54:33 +0000] "GET /api/dashboard/teacher HTTP/1.1" 200 4409 "http://localhost:52609/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:29:57] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:09:59:57 +0000] "POST /api/auth/logout HTTP/1.1" 200 62 "http://localhost:52609/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:29:58] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:09:59:58 +0000] "GET /api/auth/demo-credentials HTTP/1.1" 304 - "http://localhost:52609/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:30:04] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:00:04 +0000] "POST /api/auth/login HTTP/1.1" 200 804 "http://localhost:52609/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:30:04] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:00:04 +0000] "GET /api/dashboard/admin HTTP/1.1" 200 4992 "http://localhost:52609/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:30:11] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:00:11 +0000] "GET /api/analytics HTTP/1.1" 200 701 "http://localhost:52609/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:32:40] [32minfo[39m: ☁️  Cloudinary configured
+[2026-04-26 15:32:40] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 15:32:40] [32minfo[39m: 🚀 CampusSync Server running on port 5000 in development mode
+[2026-04-26 15:32:40] [32minfo[39m: 📅 Cron scheduler started
+[2026-04-26 15:33:10] [31merror[39m: Scheduler error (scheduled reminders): Operation `reminders.find()` buffering timed out after 10000ms
+[2026-04-26 15:33:11] [31merror[39m: ❌ MongoDB connection failed: connection 1 to 159.41.207.243:27017 timed out
+[2026-04-26 15:39:15] [32minfo[39m: ☁️  Cloudinary configured
+[2026-04-26 15:39:15] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 15:39:15] [32minfo[39m: 🚀 CampusSync Server running on port 5000 in development mode
+[2026-04-26 15:39:15] [32minfo[39m: 📅 Cron scheduler started
+[2026-04-26 15:39:17] [32minfo[39m: ✅ MongoDB Connected: ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 15:41:27] [32minfo[39m: ☁️  Cloudinary configured
+[2026-04-26 15:41:27] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 15:41:27] [32minfo[39m: 🚀 CampusSync Server running on port 5000 in development mode
+[2026-04-26 15:41:27] [32minfo[39m: 📅 Cron scheduler started
+[2026-04-26 15:41:28] [32minfo[39m: ✅ MongoDB Connected: ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 15:42:17] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:12:17 +0000] "GET /api/auth/demo-credentials HTTP/1.1" 200 245 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:42:24] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:12:24 +0000] "POST /api/auth/login HTTP/1.1" 200 784 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:42:26] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:12:26 +0000] "GET /api/dashboard/teacher HTTP/1.1" 200 4409 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:42:36] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:12:36 +0000] "POST /api/auth/logout HTTP/1.1" 200 62 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:42:36] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:12:36 +0000] "POST /api/auth/logout HTTP/1.1" 200 62 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:42:36] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:12:36 +0000] "GET /api/auth/demo-credentials HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:42:36] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:12:36 +0000] "POST /api/auth/logout HTTP/1.1" 200 62 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:42:41] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:12:41 +0000] "POST /api/auth/login HTTP/1.1" 200 804 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:42:43] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:12:43 +0000] "GET /api/dashboard/admin HTTP/1.1" 200 4933 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:42:59] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:12:59 +0000] "GET /api/analytics HTTP/1.1" 200 911 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:44:56] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:14:56 +0000] "GET /api/users/me HTTP/1.1" 200 570 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:45:06] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:15:06 +0000] "GET /api/dashboard/admin HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:45:12] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:15:12 +0000] "GET /api/analytics HTTP/1.1" 200 911 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:47:12] [32minfo[39m: ☁️  Cloudinary configured
+[2026-04-26 15:47:12] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 15:47:12] [32minfo[39m: 🚀 CampusSync Server running on port 5000 in development mode
+[2026-04-26 15:47:12] [32minfo[39m: 📅 Cron scheduler started
+[2026-04-26 15:47:16] [32minfo[39m: ✅ MongoDB Connected: ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 15:48:42] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:18:42 +0000] "GET /api/users/me HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:48:47] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:18:47 +0000] "GET /api/dashboard/admin HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:48:52] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:18:52 +0000] "GET /api/analytics HTTP/1.1" 200 911 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:50:43] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:20:43 +0000] "GET /api/users/me HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:50:48] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:20:48 +0000] "GET /api/dashboard/admin HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:52:37] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:22:37 +0000] "GET /api/users/me HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:52:43] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:22:43 +0000] "GET /api/dashboard/admin HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:52:47] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:22:47 +0000] "GET /api/analytics HTTP/1.1" 200 911 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 15:56:02] [32minfo[39m: ☁️  Cloudinary configured
+[2026-04-26 15:56:02] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 15:56:02] [32minfo[39m: 🚀 CampusSync Server running on port 5000 in development mode
+[2026-04-26 15:56:02] [32minfo[39m: 📅 Cron scheduler started
+[2026-04-26 15:56:04] [32minfo[39m: ✅ MongoDB Connected: ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 15:56:09] [32minfo[39m: ☁️  Cloudinary configured
+[2026-04-26 15:56:09] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 15:56:09] [32minfo[39m: 🚀 CampusSync Server running on port 5000 in development mode
+[2026-04-26 15:56:09] [32minfo[39m: 📅 Cron scheduler started
+[2026-04-26 15:56:10] [32minfo[39m: ✅ MongoDB Connected: ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 16:00:01] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:30:01 +0000] "POST /api/auth/logout HTTP/1.1" 401 75 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:00:02] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:30:02 +0000] "POST /api/auth/refresh HTTP/1.1" 200 526 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:00:02] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:30:02 +0000] "POST /api/auth/logout HTTP/1.1" 200 62 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:00:02] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:30:02 +0000] "GET /api/auth/demo-credentials HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:00:06] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:30:06 +0000] "POST /api/auth/login HTTP/1.1" 200 784 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:00:07] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:30:07 +0000] "GET /api/dashboard/teacher HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:00:40] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:30:40 +0000] "POST /api/auth/logout HTTP/1.1" 200 62 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:00:41] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:30:41 +0000] "GET /api/auth/demo-credentials HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:00:45] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:30:45 +0000] "POST /api/auth/login HTTP/1.1" 200 804 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:01:16] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:31:16 +0000] "GET /api/users/me HTTP/1.1" 200 570 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:03:31] [32minfo[39m: ☁️  Cloudinary configured
+[2026-04-26 16:03:31] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 16:03:31] [32minfo[39m: 🚀 CampusSync Server running on port 5000 in development mode
+[2026-04-26 16:03:31] [32minfo[39m: 📅 Cron scheduler started
+[2026-04-26 16:03:34] [32minfo[39m: ✅ MongoDB Connected: ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 16:03:42] [32minfo[39m: ☁️  Cloudinary configured
+[2026-04-26 16:03:42] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 16:03:42] [32minfo[39m: 🚀 CampusSync Server running on port 5000 in development mode
+[2026-04-26 16:03:42] [32minfo[39m: 📅 Cron scheduler started
+[2026-04-26 16:03:42] [32minfo[39m: ✅ MongoDB Connected: ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 16:06:00] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:36:00 +0000] "GET /api/users/me HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:06:11] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:36:11 +0000] "GET /api/dashboard/admin HTTP/1.1" 200 4931 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:06:24] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:36:24 +0000] "POST /api/auth/logout HTTP/1.1" 200 62 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:06:25] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:36:25 +0000] "GET /api/auth/demo-credentials HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:06:31] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:36:31 +0000] "POST /api/auth/login HTTP/1.1" 200 784 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:06:32] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:36:32 +0000] "GET /api/dashboard/teacher HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:06:54] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:36:54 +0000] "POST /api/auth/logout HTTP/1.1" 200 62 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:06:54] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:36:54 +0000] "GET /api/auth/demo-credentials HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:07:01] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:37:01 +0000] "POST /api/auth/login HTTP/1.1" 200 825 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:07:02] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:37:02 +0000] "GET /api/dashboard/student HTTP/1.1" 200 7939 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:07:12] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:37:12 +0000] "POST /api/auth/logout HTTP/1.1" 200 62 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:07:12] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:37:12 +0000] "GET /api/auth/demo-credentials HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:07:16] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:37:16 +0000] "POST /api/auth/login HTTP/1.1" 200 804 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:07:24] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:37:24 +0000] "POST /api/auth/logout HTTP/1.1" 200 62 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:07:25] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:37:25 +0000] "GET /api/auth/demo-credentials HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:07:29] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:37:29 +0000] "POST /api/auth/login HTTP/1.1" 200 825 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:08:00] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:38:00 +0000] "GET /api/dashboard/student HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:12:25] [32minfo[39m: ☁️  Cloudinary configured
+[2026-04-26 16:12:25] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 16:12:25] [32minfo[39m: 🚀 CampusSync Server running on port 5000 in development mode
+[2026-04-26 16:12:25] [32minfo[39m: 📅 Cron scheduler started
+[2026-04-26 16:12:28] [32minfo[39m: ✅ MongoDB Connected: ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 16:13:22] [32minfo[39m: ☁️  Cloudinary configured
+[2026-04-26 16:13:22] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 16:13:22] [32minfo[39m: 🚀 CampusSync Server running on port 5000 in development mode
+[2026-04-26 16:13:22] [32minfo[39m: 📅 Cron scheduler started
+[2026-04-26 16:13:23] [32minfo[39m: ✅ MongoDB Connected: ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 16:13:30] [32minfo[39m: ☁️  Cloudinary configured
+[2026-04-26 16:13:31] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 16:13:31] [32minfo[39m: 🚀 CampusSync Server running on port 5000 in development mode
+[2026-04-26 16:13:31] [32minfo[39m: 📅 Cron scheduler started
+[2026-04-26 16:13:33] [32minfo[39m: ✅ MongoDB Connected: ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 16:15:22] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:45:22 +0000] "GET /api/dashboard/student HTTP/1.1" 200 6835 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:17:29] [32minfo[39m: ☁️  Cloudinary configured
+[2026-04-26 16:17:29] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 16:17:29] [32minfo[39m: 🚀 CampusSync Server running on port 5000 in development mode
+[2026-04-26 16:17:29] [32minfo[39m: 📅 Cron scheduler started
+[2026-04-26 16:17:35] [32minfo[39m: ✅ MongoDB Connected: ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 16:18:09] [32minfo[39m: ☁️  Cloudinary configured
+[2026-04-26 16:18:09] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 16:18:09] [32minfo[39m: 🚀 CampusSync Server running on port 5000 in development mode
+[2026-04-26 16:18:09] [32minfo[39m: 📅 Cron scheduler started
+[2026-04-26 16:18:12] [32minfo[39m: ✅ MongoDB Connected: ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 16:19:42] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:49:42 +0000] "GET /api/users/me HTTP/1.1" 200 615 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:19:55] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:49:55 +0000] "GET /api/dashboard/student HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:19:58] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:49:58 +0000] "POST /api/auth/logout HTTP/1.1" 200 62 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:19:58] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:49:58 +0000] "GET /api/auth/demo-credentials HTTP/1.1" 200 247 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:20:04] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:50:04 +0000] "POST /api/auth/login HTTP/1.1" 200 804 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:20:05] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:50:05 +0000] "GET /api/dashboard/admin HTTP/1.1" 200 4518 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:20:11] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:50:11 +0000] "GET /api/analytics/user-stats HTTP/1.1" 200 187 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:20:11] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:50:11 +0000] "GET /api/users?role=student HTTP/1.1" 200 2152 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:20:14] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:50:14 +0000] "GET /api/users?role=teacher HTTP/1.1" 200 9568 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:23:46] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:53:46 +0000] "GET /api/users/me HTTP/1.1" 200 570 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:23:54] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:53:54 +0000] "GET /api/dashboard/admin HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:23:56] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:53:56 +0000] "GET /api/reminders HTTP/1.1" 200 3946 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:24:10] [32minfo[39m: Notified 4 users: "123"
+[2026-04-26 16:24:10] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:54:10 +0000] "POST /api/reminders HTTP/1.1" 201 1171 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:24:15] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:54:15 +0000] "POST /api/auth/logout HTTP/1.1" 200 62 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:24:15] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:54:15 +0000] "GET /api/auth/demo-credentials HTTP/1.1" 304 - "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:24:21] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:54:21 +0000] "POST /api/auth/login HTTP/1.1" 200 825 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:24:22] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:54:22 +0000] "GET /api/dashboard/student HTTP/1.1" 200 7943 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:24:32] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:54:32 +0000] "GET /api/reminders/69edeed188c6e01187e4ac43 HTTP/1.1" 200 1155 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2026-04-26 16:24:57] [32minfo[39m: ::ffff:127.0.0.1 - - [26/Apr/2026:10:54:57 +0000] "GET /api/dashboard/student HTTP/1.1" 200 7943 "http://localhost:65504/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"

@@ -74,10 +74,10 @@ class AuthRepository {
     }
   }
 
-  Future<void> changePassword(String currentPassword, String newPassword) async {
+  Future<void> changePassword(String oldPassword, String newPassword) async {
     try {
-      await _api.post('/users/change-password', data: {
-        'currentPassword': currentPassword,
+      await _api.post('/auth/change-password', data: {
+        'oldPassword': oldPassword,
         'newPassword': newPassword,
       });
     } on DioException catch (e) {

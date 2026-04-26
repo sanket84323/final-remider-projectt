@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../../core/constants/app_constants.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/app_providers.dart';
 import '../../data/models/models.dart';
 import '../../widgets/app_widgets.dart';
@@ -27,6 +28,7 @@ class _NotificationListScreenState extends ConsumerState<NotificationListScreen>
   @override
   Widget build(BuildContext context) {
     final notifAsync = ref.watch(notificationProvider);
+    final userRole = ref.watch(authStateProvider).valueOrNull?.role ?? 'student';
 
     return Scaffold(
       appBar: AppBar(
@@ -75,15 +77,29 @@ class _NotificationListScreenState extends ConsumerState<NotificationListScreen>
                     ),
                     ...items.map((n) {
                       final isAssignment = n.assignmentId != null;
-                      if (isAssignment) {
-                        return _NotifTile(
-                          notification: n,
-                          onTap: () {
-                            ref.read(notificationProvider.notifier).markAsRead(n.id);
+                      final isReminder = n.reminderId != null;
+
+                      void handleTap() {
+                        ref.read(notificationProvider.notifier).markAsRead(n.id);
+                        
+                        if (isAssignment) {
+                          if (userRole == 'student') {
                             context.push('/student/assignment/${n.assignmentId}');
-                          },
-                        );
+                          } else {
+                            // Teacher/Admin goes to teacher assignment detail
+                            context.push('/teacher-assignment/${n.assignmentId}');
+                          }
+                        } else if (isReminder) {
+                          if (userRole == 'student') {
+                            context.push('/student/reminder/${n.reminderId}');
+                          } else if (userRole == 'teacher') {
+                            context.push('/teacher-receipts/${n.reminderId}');
+                          } else {
+                             context.push('/admin-announce?id=${n.reminderId}');
+                          }
+                        }
                       }
+
                       return Slidable(
                         key: ValueKey(n.id),
                         endActionPane: ActionPane(
@@ -100,10 +116,7 @@ class _NotificationListScreenState extends ConsumerState<NotificationListScreen>
                         ),
                         child: _NotifTile(
                           notification: n,
-                          onTap: () {
-                            ref.read(notificationProvider.notifier).markAsRead(n.id);
-                            context.push('/student/reminder/${n.reminderId}');
-                          },
+                          onTap: handleTap,
                         ),
                       );
                     }),
@@ -160,7 +173,7 @@ class _NotifTile extends StatelessWidget {
                   if (isUnread) Container(width: 8, height: 8, decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle)),
                 ]),
                 const SizedBox(height: 4),
-                Text(notification.body, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, fontFamily: 'Inter', height: 1.4), maxLines: 2, overflow: TextOverflow.ellipsis),
+                LinkifiedText(notification.body, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, fontFamily: 'Inter', height: 1.4), maxLines: 2, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 4),
                 Text(timeago.format(notification.deliveredAt), style: const TextStyle(fontSize: 11, color: AppColors.textHint, fontFamily: 'Inter')),
               ]),
@@ -173,10 +186,17 @@ class _NotifTile extends StatelessWidget {
 
   IconData _typeIcon(String type) {
     switch (type) {
-      case 'assignment': return Icons.assignment_rounded;
-      case 'announcement': return Icons.campaign_rounded;
-      case 'system': return Icons.settings_rounded;
-      default: return Icons.notifications_rounded;
+      case 'assignment':
+      case 'assignment_submission':
+      case 'assignment_approval':
+        return Icons.assignment_rounded;
+      case 'announcement':
+      case 'reminder':
+        return Icons.campaign_rounded;
+      case 'system':
+        return Icons.settings_rounded;
+      default:
+        return Icons.notifications_rounded;
     }
   }
 }

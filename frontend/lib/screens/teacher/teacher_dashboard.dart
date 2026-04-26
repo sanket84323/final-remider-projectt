@@ -9,6 +9,7 @@ import '../../providers/app_providers.dart';
 import '../../data/models/models.dart';
 import '../../data/repositories/repositories.dart';
 import '../../widgets/app_widgets.dart';
+import '../student/notification_list_screen.dart';
 
 class TeacherDashboard extends ConsumerStatefulWidget {
   const TeacherDashboard({super.key});
@@ -41,9 +42,20 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
               backgroundColor: const Color(0xFF1A237E),
               title: const Text('Faculty Command Center', style: TextStyle(color: Colors.white, fontFamily: 'Inter', fontWeight: FontWeight.w700, fontSize: 18)),
               actions: [
+                Consumer(builder: (context, ref, _) {
+                  final unread = ref.watch(unreadCountProvider);
+                  return IconButton(
+                    icon: Badge(
+                      isLabelVisible: unread > 0,
+                      label: Text('$unread', style: const TextStyle(fontSize: 10, color: Colors.white)),
+                      child: const Icon(Icons.notifications_outlined, color: Colors.white),
+                    ),
+                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => NotificationListScreen())),
+                  );
+                }),
                 IconButton(
                   icon: const Icon(Icons.settings_rounded, color: Colors.white),
-                  onPressed: () => context.push('/teacher-profile'),
+                  onPressed: () => context.push('/settings'),
                 ),
                 IconButton(
                   icon: const Icon(Icons.logout_rounded, color: Colors.white),
@@ -56,11 +68,13 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
               ],
               flexibleSpace: FlexibleSpaceBar(
                 background: Container(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFF1A237E), Color(0xFF311B92), Color(0xFF4527A0)],
+                      colors: Theme.of(context).brightness == Brightness.dark
+                        ? [AppColors.darkSurface, AppColors.darkCard]
+                        : [const Color(0xFF1A237E), const Color(0xFF311B92), const Color(0xFF4527A0)],
                     ),
                   ),
                   child: Stack(
@@ -205,6 +219,7 @@ class _TeacherDashboardContentState extends ConsumerState<_TeacherDashboardConte
       final allAssignments = (widget.data['assignments'] as List?)?.map((a) => AssignmentModel.fromJson(a)).toList() ?? [];
       final allReminders = (widget.data['recentReminders'] as List?)?.map((r) => ReminderModel.fromJson(r)).toList() ?? [];
       final allScheduled = (widget.data['scheduledReminders'] as List?)?.map((r) => ReminderModel.fromJson(r)).toList() ?? [];
+      final allHodAnnouncements = (widget.data['hodAnnouncements'] as List?)?.map((r) => ReminderModel.fromJson(r)).toList() ?? [];
 
       final assignments = allAssignments.where((a) => a.title.toLowerCase().contains(_assignmentSearch.toLowerCase())).toList();
       final recentReminders = allReminders.where((r) => r.title.toLowerCase().contains(_sentSearch.toLowerCase())).toList();
@@ -258,6 +273,25 @@ class _TeacherDashboardContentState extends ConsumerState<_TeacherDashboardConte
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                // ─── HOD Announcements ──────────────────────────────────────────────
+                if (allHodAnnouncements.isNotEmpty) ...[
+                  const _SectionHeader(title: '🏢 HOD Announcements'),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: allHodAnnouncements.length,
+                    itemBuilder: (context, index) {
+                      final reminder = allHodAnnouncements[index];
+                      return _ReminderRow(
+                        reminder: reminder,
+                        onTap: () => context.push('/reminder-detail/${reminder.id}'), // Shared Detail view
+                        showInsights: false, // Don't show insights for HOD announcements
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                ],
 
                 // ─── Scheduled Notices ────────────────────────────────────────────────
                 if (allScheduled.isNotEmpty) ...[
@@ -571,10 +605,10 @@ class _ManagementRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.black.withOpacity(0.05)),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4))],
+          border: Border.all(color: Theme.of(context).dividerColor),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.2 : 0.02), blurRadius: 8, offset: const Offset(0, 4))],
         ),
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -622,7 +656,8 @@ class _ManagementRow extends StatelessWidget {
 class _ReminderRow extends StatelessWidget {
   final ReminderModel reminder;
   final VoidCallback onTap;
-  const _ReminderRow({required this.reminder, required this.onTap});
+  final bool showInsights;
+  const _ReminderRow({required this.reminder, required this.onTap, this.showInsights = true});
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -633,16 +668,16 @@ class _ReminderRow extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white, 
+          color: Theme.of(context).cardColor, 
           borderRadius: BorderRadius.circular(16), 
-          border: Border.all(color: Colors.black.withOpacity(0.05)),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4))],
+          border: Border.all(color: Theme.of(context).dividerColor),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.2 : 0.02), blurRadius: 8, offset: const Offset(0, 4))],
         ),
         child: Row(children: [
           _ModernPriorityBadge(priority: reminder.priority),
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(reminder.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, fontFamily: 'Inter', color: Color(0xFF1E293B)), maxLines: 1, overflow: TextOverflow.ellipsis),
+            Text(reminder.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, fontFamily: 'Inter', color: Theme.of(context).textTheme.titleLarge?.color), maxLines: 1, overflow: TextOverflow.ellipsis),
             const SizedBox(height: 4),
             Row(
               children: [
@@ -653,24 +688,25 @@ class _ReminderRow extends StatelessWidget {
             ),
           ])),
           const SizedBox(width: 8),
-          GestureDetector(
-            onTap: () => context.push('/teacher-receipts/${reminder.id}'),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0D47A1).withOpacity(0.08), 
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF0D47A1).withOpacity(0.1)),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.analytics_outlined, size: 12, color: Color(0xFF0D47A1)),
-                  const SizedBox(width: 4),
-                  Text('Insights', style: TextStyle(fontSize: 11, color: Color(0xFF0D47A1), fontFamily: 'Inter', fontWeight: FontWeight.w700)),
-                ],
+          if (showInsights)
+            GestureDetector(
+              onTap: () => context.push('/teacher-receipts/${reminder.id}'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0D47A1).withOpacity(0.08), 
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF0D47A1).withOpacity(0.1)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.analytics_outlined, size: 12, color: Color(0xFF0D47A1)),
+                    const SizedBox(width: 4),
+                    const Text('Insights', style: TextStyle(fontSize: 11, color: Color(0xFF0D47A1), fontFamily: 'Inter', fontWeight: FontWeight.w700)),
+                  ],
+                ),
               ),
             ),
-          ),
         ]),
       ),
     ),
@@ -692,7 +728,7 @@ class _DeadlineRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppDimens.radiusMd),
         child: Container(
           padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(AppDimens.radiusMd), border: Border.all(color: AppColors.divider)),
+          decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(AppDimens.radiusMd), border: Border.all(color: Theme.of(context).dividerColor)),
           child: Row(children: [
             const Icon(Icons.assignment_rounded, color: AppColors.accent, size: 20),
             const SizedBox(width: 10),

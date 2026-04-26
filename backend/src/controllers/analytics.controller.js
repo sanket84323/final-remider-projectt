@@ -22,7 +22,7 @@ const getAnalytics = async (req, res) => {
     
     const since = new Date(Date.now() - parseInt(days) * 24 * 60 * 60 * 1000);
 
-    const [totalUsers, totalReminders, totalStudents, totalTeachers, userGrowth, remindersByPriority, remindersByCategory, noticeReadRates, topActiveTeachers, activityByDay, studentActivityByClass, assignmentStatsByClass] = await Promise.all([
+    const [totalUsers, totalReminders, totalStudents, totalTeachers, userGrowth, remindersByPriority, remindersByCategory, noticeReadRates, topActiveTeachers, activityByDay, studentActivityByClass, assignmentStatsByClass, classMostNotificationsRead, totalAssignmentsCount, totalSubmissionsAggr] = await Promise.all([
       User.countDocuments({ ...filter, isActive: true }),
       Reminder.countDocuments(reminderFilter),
       User.countDocuments({ ...filter, role: 'student', isActive: true }),
@@ -61,8 +61,7 @@ const getAnalytics = async (req, res) => {
         { $unwind: '$user' },
         { $match: { ...filter } },
         { $group: { _id: '$userId', count: { $sum: 1 }, name: { $first: '$user.name' }, email: { $first: '$user.email' } } },
-        { $sort: { count: -1 } },
-        { $limit: 5 }
+        { $sort: { count: -1 } }
       ]),
       ActivityLog.aggregate([
         { $match: { createdAt: { $gte: since } } },
@@ -89,14 +88,41 @@ const getAnalytics = async (req, res) => {
             _id: '$student.className',
             submitted: { $sum: 1 },
             approved: { $sum: { $cond: [{ $eq: ['$completedBy.status', 'completed'] }, 1, 0] } }
-        }}
+        }},
+        { $sort: { submitted: -1 } }
       ]),
+      // 13: classMostNotificationsRead
+      Notification.aggregate([
+        { $match: { readStatus: true } },
+        { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'user' } },
+        { $unwind: '$user' },
+        { $match: deptId ? { 'user.department': deptId } : {} },
+        { $group: { _id: '$user.className', readCount: { $sum: 1 } } },
+        { $sort: { readCount: -1 } },
+      ]),
+      // 14: totalAssignments
+      Assignment.countDocuments(filter),
+      // 15: totalSubmissions
+      Assignment.aggregate([
+        { $match: filter },
+        { $project: { count: { $size: "$completedBy" } } },
+        { $group: { _id: null, total: { $sum: "$count" } } }
+      ])
     ]);
 
     // Calculate GLOBAL read rate for the dashboard
     const totalNotifications = noticeReadRates.reduce((acc, curr) => acc + (curr.total || 0), 0);
     const totalRead = noticeReadRates.reduce((acc, curr) => acc + (curr.read || 0), 0);
     const globalReadRate = totalNotifications > 0 ? Math.round((totalRead / totalNotifications) * 100) : 0;
+
+    const totalSubmissions = totalSubmissionsAggr[0]?.total || 0;
+    const globalSubmissionRate = (totalAssignmentsCount > 0 && totalStudents > 0) 
+        ? Math.min(100, Math.round((totalSubmissions / (totalAssignmentsCount * totalStudents)) * 100))
+        : 0;
+
+    const classMostSubmissions = assignmentStatsByClass.length > 0 ? { name: assignmentStatsByClass[0]._id || 'Unknown', count: assignmentStatsByClass[0].submitted } : null;
+    const topClassNotifications = classMostNotificationsRead.length > 0 ? { name: classMostNotificationsRead[0]._id || 'Unknown', count: classMostNotificationsRead[0].readCount } : null;
+    const topTeacher = topActiveTeachers.length > 0 ? { name: topActiveTeachers[0].name, count: topActiveTeachers[0].count } : null;
 
     return successResponse(res, {
       globalStats: {
@@ -105,6 +131,10 @@ const getAnalytics = async (req, res) => {
         totalStudents,
         totalTeachers,
         readRate: globalReadRate,
+        submissionRate: globalSubmissionRate,
+        topSubmissionClass: classMostSubmissions,
+        topNotificationClass: topClassNotifications,
+        topTeacher: topTeacher,
       },
       userGrowth,
       remindersByPriority,
@@ -114,6 +144,7 @@ const getAnalytics = async (req, res) => {
       activityByDay,
       studentActivityByClass,
       assignmentStatsByClass,
+      classMostNotificationsRead,
     }, 'Analytics retrieved');
   } catch (error) {
     return errorResponse(res, error.message, 500);

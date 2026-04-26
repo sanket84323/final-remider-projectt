@@ -100,7 +100,7 @@ class _ReminderDetailView extends StatelessWidget {
           // ─── Description ───────────────────────────────────────────────
           const Text('Description', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, fontFamily: 'Inter', color: AppColors.textPrimary)),
           const SizedBox(height: 10),
-          Text(reminder.description, style: const TextStyle(fontSize: 15, color: AppColors.textSecondary, fontFamily: 'Inter', height: 1.7)),
+          LinkifiedText(reminder.description, style: const TextStyle(fontSize: 15, color: AppColors.textSecondary, fontFamily: 'Inter', height: 1.7)),
           const SizedBox(height: 20),
 
           // ─── Tags ──────────────────────────────────────────────────────

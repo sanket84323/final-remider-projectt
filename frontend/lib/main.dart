@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -12,11 +13,14 @@ void main() async {
 
   // Initialize Firebase (optional - skipped if not configured)
   try {
-    await Firebase.initializeApp();
+    if (kIsWeb) {
+      // Firebase Web requires 'options'. Skip if not configured.
+      debugPrint('Firebase Web initialization skipped (No options provided).');
+    } else {
+      await Firebase.initializeApp();
+    }
   } catch (e) {
-    debugPrint('Firebase init skipped (not configured): $e');
-    // App continues without Firebase - push notifications won't work
-    // but all other features remain functional
+    debugPrint('Firebase initialization skipped. ($e)');
   }
 
   // Initialize Hive for offline cache

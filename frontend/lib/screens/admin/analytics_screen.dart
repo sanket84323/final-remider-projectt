@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../../core/constants/app_constants.dart';
 import '../../data/services/api_service.dart';
 
@@ -17,9 +18,8 @@ class AnalyticsScreen extends ConsumerWidget {
     final analyticsAsync = ref.watch(_analyticsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        title: const Text('Department Insights', style: TextStyle(fontWeight: FontWeight.w800, fontFamily: 'Inter')),
+        title: const Text('Department Performance', style: TextStyle(fontWeight: FontWeight.w800, fontFamily: 'Inter')),
         leading: IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => context.pop()),
         actions: [
           IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: () => ref.refresh(_analyticsProvider)),
@@ -28,223 +28,218 @@ class AnalyticsScreen extends ConsumerWidget {
       body: analyticsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
-        data: (data) {
-          return ListView(
-            padding: const EdgeInsets.all(AppDimens.paddingMd),
-            children: [
-              // ─── Top Row: Leaderboard ───────────────────────────────────
-              _ChartCard(
-                title: 'Class Leaderboard',
-                subtitle: 'Classes ranked by overall student activity points.',
-                child: _ClassLeaderboard(data: data['studentActivityByClass'] as List? ?? []),
-              ),
-              const SizedBox(height: 20),
-
-              // ─── Submission Progress ─────────────────────────────────────
-              _ChartCard(
-                title: 'Submission Progress',
-                subtitle: 'Submissions vs Teacher Approvals across classes.',
-                child: _AssignmentStatsList(data: data['assignmentStatsByClass'] as List? ?? []),
-              ),
-              const SizedBox(height: 20),
-
-              // ─── Communication ──────────────────────────────────────────
-              _ChartCard(
-                title: 'Communication Success',
-                subtitle: 'Percentage of notices actually read by students.',
-                child: _NoticeReadRate(data: data['noticeReadRates'] as List? ?? []),
-              ),
-              const SizedBox(height: 20),
-
-              // ─── Top Contributors ───────────────────────────────────────
-              _ChartCard(
-                title: 'Top Contributors',
-                subtitle: 'Teachers most active in publishing academic content.',
-                child: _TeacherList(data: data['topTeachers'] as List? ?? []),
-              ),
-            ],
-          );
-        },
+        data: (data) => _AnalyticsBody(data: data),
       ),
     );
   }
 }
 
-class _ChartCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final Widget child;
-  const _ChartCard({required this.title, required this.subtitle, required this.child});
+class _AnalyticsBody extends StatelessWidget {
+  final Map<String, dynamic> data;
+  const _AnalyticsBody({required this.data});
 
   @override
   Widget build(BuildContext context) {
+    final assignmentStats = (data['assignmentStatsByClass'] as List?) ?? [];
+    final notificationStats = (data['classMostNotificationsRead'] as List?) ?? [];
+    final teacherStats = (data['topTeachers'] as List?) ?? [];
+    final globalStats = data['globalStats'] ?? {};
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        // ─── Dual KPI Row ──────────────────────────────────────────
+        Row(
+          children: [
+            Expanded(child: _buildKPI(context, 'Read Rate', '${globalStats['readRate'] ?? 0}%', Icons.mark_email_read_rounded, const Color(0xFF6366F1))),
+            const SizedBox(width: 12),
+            Expanded(child: _buildKPI(context, 'Submission', '${globalStats['submissionRate'] ?? 0}%', Icons.task_alt_rounded, const Color(0xFF10B981))),
+          ],
+        ),
+        const SizedBox(height: 24),
+
+        // ─── Submissions Bar Chart ──────────────────────────────────
+        _buildChartCard(
+          context,
+          'Top Classes by Submissions',
+          'Classes with highest assignment completion volume',
+          _buildSubmissionsBarChart(context, assignmentStats),
+        ),
+        const SizedBox(height: 24),
+
+        // ─── Notifications Pie Chart ────────────────────────────────
+        _buildChartCard(
+          context,
+          'Engagement by Class',
+          'Percentage of notifications read per class',
+          _buildNotificationsPie(notificationStats),
+        ),
+        const SizedBox(height: 24),
+
+        // ─── Teacher Activity Bar Chart ─────────────────────────────
+        _buildChartCard(
+          context,
+          'Faculty Activity Leaderboard',
+          'Teachers with most published academic content',
+          _buildTeachersChart(context, teacherStats),
+        ),
+        const SizedBox(height: 32),
+      ],
+    );
+  }
+
+  Widget _buildKPI(BuildContext context, String label, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-        boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Theme.of(context).dividerColor),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.2 : 0.02), blurRadius: 10, offset: const Offset(0, 4))],
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary, fontFamily: 'Inter')),
-        const SizedBox(height: 4),
-        Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textHint, fontFamily: 'Inter')),
-        const SizedBox(height: 20),
-        child,
+      child: Column(children: [
+        Icon(icon, color: color, size: 24),
+        const SizedBox(height: 12),
+        Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: color, fontFamily: 'Inter')),
+        Text(label.toUpperCase(), style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Theme.of(context).textTheme.bodySmall?.color, letterSpacing: 0.5)),
       ]),
     );
   }
-}
 
-class _NoticeReadRate extends StatelessWidget {
-  final List<dynamic> data;
-  const _NoticeReadRate({required this.data});
-
-  @override
-  Widget build(BuildContext context) {
-    if (data.isEmpty) return const Center(child: Text('Not enough data', style: TextStyle(color: AppColors.textHint, fontFamily: 'Inter')));
-    return Column(children: data.map((item) {
-      final rate = (item['readRate'] as num).toDouble() / 100.0;
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text(item['_id'] ?? 'General', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, fontFamily: 'Inter')),
-            Text('${item['readRate']}%', style: const TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w700, fontFamily: 'Inter')),
-          ]),
-          const SizedBox(height: 6),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: rate,
-              backgroundColor: AppColors.primaryContainer,
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
-              minHeight: 6,
-            ),
-          ),
-        ]),
-      );
-    }).toList());
+  Widget _buildChartCard(BuildContext context, String title, String subtitle, Widget chart) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Theme.of(context).dividerColor),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.2 : 0.03), blurRadius: 20, offset: const Offset(0, 10))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Theme.of(context).textTheme.titleLarge?.color, fontFamily: 'Inter')),
+          Text(subtitle, style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodyMedium?.color, fontFamily: 'Inter')),
+          const SizedBox(height: 32),
+          SizedBox(height: 200, child: chart),
+        ],
+      ),
+    );
   }
-}
 
-class _AssignmentStatsList extends StatelessWidget {
-  final List<dynamic> data;
-  const _AssignmentStatsList({required this.data});
+  Widget _buildSubmissionsBarChart(BuildContext context, List stats) {
+    if (stats.isEmpty) return const Center(child: Text('No data'));
+    final allData = stats;
+    final chartWidth = (allData.length * 60.0).clamp(MediaQuery.of(context).size.width - 64, 2000.0);
 
-  @override
-  Widget build(BuildContext context) {
-    if (data.isEmpty) return const SizedBox(height: 100, child: Center(child: Text('No submission data yet', style: TextStyle(color: AppColors.textHint, fontFamily: 'Inter'))));
-
-    return Column(children: data.map((item) {
-      final className = item['_id'] as String? ?? 'Other';
-      final submitted = item['submitted'] as int;
-      final approved = item['approved'] as int;
-
-      return InkWell(
-        onTap: () => context.push('/admin-class-analytics/${Uri.encodeComponent(className)}'),
-        borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text(className, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, fontFamily: 'Inter')),
-              Text('$submitted submitted • $approved approved', style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, fontFamily: 'Inter')),
-            ]),
-            const SizedBox(height: 6),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: SizedBox(
-                height: 8,
-                child: LinearProgressIndicator(
-                  value: submitted > 0 ? approved / submitted : 0,
-                  backgroundColor: AppColors.divider.withOpacity(0.5),
-                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.success),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: SizedBox(
+        width: chartWidth,
+        child: BarChart(
+          BarChartData(
+            alignment: BarChartAlignment.spaceAround,
+            maxY: allData.fold(0.0, (m, s) => (s['submitted'] as num).toDouble() > m ? (s['submitted'] as num).toDouble() : m) * 1.2,
+            titlesData: FlTitlesData(
+              leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  getTitlesWidget: (v, m) {
+                    if (v.toInt() < 0 || v.toInt() >= allData.length) return const SizedBox();
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(allData[v.toInt()]['_id'] ?? '?', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600)),
+                    );
+                  },
                 ),
               ),
             ),
-          ]),
-        ),
-      );
-    }).toList());
-  }
-}
-
-class _TeacherList extends StatelessWidget {
-  final List<dynamic> data;
-  const _TeacherList({required this.data});
-  @override
-  Widget build(BuildContext context) {
-    if (data.isEmpty) return const Center(child: Text('No data', style: TextStyle(color: AppColors.textHint, fontFamily: 'Inter')));
-    return Column(children: data.take(5).map((t) => Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(children: [
-        CircleAvatar(radius: 18, backgroundImage: NetworkImage('https://ui-avatars.com/api/?name=${Uri.encodeComponent(t['name'] ?? '')}&background=00897B&color=fff&size=64'), backgroundColor: AppColors.primaryContainer),
-        const SizedBox(width: 12),
-        Expanded(child: Text(t['name'] ?? '', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w500, fontSize: 13))),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(color: AppColors.primaryContainer, borderRadius: BorderRadius.circular(AppDimens.radiusFull)),
-          child: Text('${t['count']} sent', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary, fontFamily: 'Inter')),
-        ),
-      ]),
-    )).toList());
-  }
-}
-
-class _ClassLeaderboard extends StatelessWidget {
-  final List<dynamic> data;
-  const _ClassLeaderboard({required this.data});
-
-  @override
-  Widget build(BuildContext context) {
-    final List<dynamic> fullList = data.map((e) => {
-      'name': e['_id'] as String? ?? 'Other',
-      'count': (e['count'] as num).toInt(),
-    }).toList();
-    fullList.sort((a, b) => (b['count'] as int).compareTo(a['count'] as int));
-
-    if (fullList.isEmpty) {
-      return const SizedBox(height: 100, child: Center(child: Text('Awaiting first interactions...', style: TextStyle(color: AppColors.textHint, fontFamily: 'Inter'))));
-    }
-
-    return Column(children: fullList.asMap().entries.map((entry) {
-      final idx = entry.key;
-      final item = entry.value;
-      final name = item['name'] as String;
-      final count = item['count'] as int;
-
-      Color rankColor = AppColors.textSecondary;
-      IconData? rankIcon;
-      if (idx == 0 && count > 0) { rankColor = const Color(0xFFFFD700); rankIcon = Icons.emoji_events_rounded; }
-      else if (idx == 1 && count > 0) { rankColor = const Color(0xFFC0C0C0); rankIcon = Icons.emoji_events_rounded; }
-      else if (idx == 2 && count > 0) { rankColor = const Color(0xFFCD7F32); rankIcon = Icons.emoji_events_rounded; }
-
-      return Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: idx < 3 && count > 0 ? rankColor.withOpacity(0.05) : Colors.transparent,
-          borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-          border: Border.all(color: idx < 3 && count > 0 ? rankColor.withOpacity(0.2) : Colors.transparent),
-        ),
-        child: Row(children: [
-          Container(
-            width: 28,
-            height: 28,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: idx < 3 && count > 0 ? rankColor : AppColors.divider.withOpacity(0.3),
-              shape: BoxShape.circle,
-            ),
-            child: Text('${idx + 1}', style: TextStyle(color: idx < 3 && count > 0 ? Colors.white : AppColors.textSecondary, fontWeight: FontWeight.bold, fontSize: 12)),
+            gridData: const FlGridData(show: false),
+            borderData: FlBorderData(show: false),
+            barGroups: allData.asMap().entries.map((e) => BarChartGroupData(
+              x: e.key,
+              barRods: [BarChartRodData(toY: (e.value['submitted'] as num).toDouble(), color: const Color(0xFF6366F1), width: 20, borderRadius: BorderRadius.circular(4))],
+            )).toList(),
           ),
-          const SizedBox(width: 16),
-          Expanded(child: Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, fontFamily: 'Inter'))),
-          if (rankIcon != null) Padding(padding: const EdgeInsets.only(right: 12), child: Icon(rankIcon, color: rankColor, size: 20)),
-          Text('$count pts', style: TextStyle(fontWeight: FontWeight.w800, color: idx < 3 && count > 0 ? rankColor : AppColors.textHint, fontSize: 13)),
-        ]),
-      );
-    }).toList());
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotificationsPie(List stats) {
+    if (stats.isEmpty) return const Center(child: Text('No data'));
+    final allData = stats;
+    final colors = [
+      const Color(0xFF6366F1), const Color(0xFFF59E0B), const Color(0xFF10B981), const Color(0xFFEC4899),
+      const Color(0xFF8B5CF6), const Color(0xFF06B6D4), const Color(0xFFF43F5E), const Color(0xFF10B981)
+    ];
+    
+    return Row(children: [
+      Expanded(child: PieChart(PieChartData(
+        sections: allData.asMap().entries.map((e) => PieChartSectionData(
+          color: colors[e.key % colors.length],
+          value: (e.value['readCount'] as num).toDouble(),
+          radius: 40,
+          title: '',
+        )).toList(),
+      ))),
+      const SizedBox(width: 20),
+      Expanded(child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: allData.asMap().entries.map((e) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(children: [
+              Container(width: 10, height: 10, decoration: BoxDecoration(color: colors[e.key % colors.length], shape: BoxShape.circle)),
+              const SizedBox(width: 8),
+              Expanded(child: Text(e.value['_id'] ?? 'Other', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis)),
+            ]),
+          )).toList(),
+        ),
+      )),
+    ]);
+  }
+
+  Widget _buildTeachersChart(BuildContext context, List stats) {
+    if (stats.isEmpty) return const Center(child: Text('No data'));
+    final allData = stats;
+    final chartWidth = (allData.length * 80.0).clamp(MediaQuery.of(context).size.width - 64, 3000.0);
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: SizedBox(
+        width: chartWidth,
+        child: BarChart(
+          BarChartData(
+            alignment: BarChartAlignment.spaceAround,
+            maxY: allData.fold(0.0, (m, s) => (s['count'] as num).toDouble() > m ? (s['count'] as num).toDouble() : m) * 1.2,
+            titlesData: FlTitlesData(
+              leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  getTitlesWidget: (v, m) {
+                    if (v.toInt() < 0 || v.toInt() >= allData.length) return const SizedBox();
+                    final name = allData[v.toInt()]['name'] ?? 'T';
+                    return Padding(padding: const EdgeInsets.only(top: 8), child: Text(name.split(' ').first, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600)));
+                  },
+                ),
+              ),
+            ),
+            gridData: const FlGridData(show: false),
+            borderData: FlBorderData(show: false),
+            barGroups: allData.asMap().entries.map((e) => BarChartGroupData(
+              x: e.key,
+              barRods: [BarChartRodData(toY: (e.value['count'] as num).toDouble(), color: const Color(0xFFF59E0B), width: 24, borderRadius: BorderRadius.circular(6))],
+            )).toList(),
+          ),
+        ),
+      ),
+    );
   }
 }

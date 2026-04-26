@@ -84,13 +84,26 @@ const getStudentDashboard = async (req, res) => {
 const getTeacherDashboard = async (req, res) => {
   try {
     const now = new Date();
-    const [totalReminders, sentThisMonth, scheduledCount, recentReminders, assignments, scheduledReminders] = await Promise.all([
+    const user = req.user;
+
+    // Filter for announcements from HOD (Admin) targeted at all or this department
+    const hodAnnouncementsFilter = {
+      status: 'sent',
+      $or: [
+        { 'targetAudience.type': 'all' },
+        { 'targetAudience.type': 'department', 'targetAudience.department': user.department }
+      ],
+      createdBy: { $ne: user._id } // Don't include teacher's own reminders here
+    };
+
+    const [totalReminders, sentThisMonth, scheduledCount, recentReminders, assignments, scheduledReminders, hodAnnouncements] = await Promise.all([
       Reminder.countDocuments({ createdBy: req.user._id }),
       Reminder.countDocuments({ createdBy: req.user._id, status: 'sent', createdAt: { $gte: new Date(now.getFullYear(), now.getMonth(), 1) } }),
       Reminder.countDocuments({ createdBy: req.user._id, status: 'scheduled' }),
       Reminder.find({ createdBy: req.user._id, status: 'sent' }).sort({ createdAt: -1 }).limit(5).populate('createdBy', 'name'),
       Assignment.find({ createdBy: req.user._id }).sort({ dueDate: 1 }).limit(10).populate('createdBy', 'name'),
       Reminder.find({ createdBy: req.user._id, status: 'scheduled' }).sort({ scheduledFor: 1 }).limit(5).populate('createdBy', 'name'),
+      Reminder.find(hodAnnouncementsFilter).sort({ createdAt: -1 }).limit(5).populate('createdBy', 'name')
     ]);
 
     return successResponse(res, {
@@ -98,6 +111,7 @@ const getTeacherDashboard = async (req, res) => {
       recentReminders,
       scheduledReminders,
       assignments,
+      hodAnnouncements,
     }, 'Teacher dashboard loaded');
   } catch (error) {
     return errorResponse(res, error.message, 500);

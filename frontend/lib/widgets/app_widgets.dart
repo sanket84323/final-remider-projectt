@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../core/constants/app_constants.dart';
 
 // ─── Priority Badge ───────────────────────────────────────────────────────────
@@ -180,3 +182,80 @@ class _ShimmerCardState extends State<ShimmerCard> with SingleTickerProviderStat
     );
   }
 }
+
+// ─── Linkified Text ───────────────────────────────────────────────────────────
+class LinkifiedText extends StatelessWidget {
+  final String text;
+  final TextStyle? style;
+  final TextAlign textAlign;
+  final int? maxLines;
+  final TextOverflow overflow;
+
+  const LinkifiedText(
+    this.text, {
+    super.key,
+    this.style,
+    this.textAlign = TextAlign.start,
+    this.maxLines,
+    this.overflow = TextOverflow.clip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final List<TextSpan> spans = [];
+    final RegExp urlRegExp = RegExp(
+      r'((https?:\/\/)?([a-z0-9]+([\-\.][a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?))',
+      caseSensitive: false,
+    );
+
+    int start = 0;
+    urlRegExp.allMatches(text).forEach((match) {
+      // Add text before the link
+      if (match.start > start) {
+        spans.add(TextSpan(text: text.substring(start, match.start)));
+      }
+
+      final String urlText = match.group(0)!;
+      final String fullUrl = urlText.startsWith('http') ? urlText : 'https://$urlText';
+
+      spans.add(
+        TextSpan(
+          text: urlText,
+          style: (style ?? const TextStyle()).copyWith(
+            color: AppColors.primary,
+            decoration: TextDecoration.underline,
+            fontWeight: FontWeight.w600,
+          ),
+          recognizer: TapGestureRecognizer()
+            ..onTap = () async {
+              final Uri uri = Uri.parse(fullUrl);
+              try {
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              } catch (e) {
+                debugPrint('Could not launch $fullUrl: $e');
+              }
+            },
+        ),
+      );
+      start = match.end;
+    });
+
+    // Add remaining text
+    if (start < text.length) {
+      spans.add(TextSpan(text: text.substring(start)));
+    }
+
+    return RichText(
+      textAlign: textAlign,
+      maxLines: maxLines,
+      overflow: overflow,
+      text: TextSpan(
+        style: style ?? DefaultTextStyle.of(context).style,
+        children: spans,
+      ),
+    );
+  }
+}
+

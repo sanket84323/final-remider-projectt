@@ -165,6 +165,25 @@ const markComplete = async (req, res) => {
     
     await assignment.save();
     console.log('[DEBUG] Student submission saved successfully');
+    
+    // Notify the teacher who created the assignment
+    try {
+      const teacher = await User.findById(assignment.createdBy).select('_id fcmToken').lean();
+      if (teacher) {
+        await notificationService.notifyUsers({
+          users: [teacher],
+          title: 'New Submission',
+          body: `A student has submitted: ${assignment.title}`,
+          type: 'assignment_submission',
+          assignmentId: assignment._id,
+          priority: 'normal',
+          data: { assignmentId: assignment._id.toString(), type: 'assignment_submission' },
+        });
+      }
+    } catch (notifErr) {
+      console.error('[ERROR] Failed to notify teacher of submission:', notifErr);
+    }
+
     await ActivityLog.create({ userId: req.user._id, action: 'COMPLETE_ASSIGNMENT', metadata: { assignmentId: assignment._id } });
     
     return successResponse(res, {}, 'Marked as completed');
@@ -232,6 +251,25 @@ const markStudentComplete = async (req, res) => {
     }
     
     await assignment.save();
+
+    // Notify the student that their submission was approved
+    try {
+      const student = await User.findById(studentId).select('_id fcmToken').lean();
+      if (student) {
+        await notificationService.notifyUsers({
+          users: [student],
+          title: 'Assignment Approved! ✅',
+          body: `Your submission for "${assignment.title}" has been approved.`,
+          type: 'assignment_approval',
+          assignmentId: assignment._id,
+          priority: 'important',
+          data: { assignmentId: assignment._id.toString(), type: 'assignment_approval' },
+        });
+      }
+    } catch (notifErr) {
+      console.error('[ERROR] Failed to notify student of approval:', notifErr);
+    }
+
     return successResponse(res, {}, 'Submission approved/completed');
   } catch (error) {
     return errorResponse(res, error.message, 500);

@@ -64,9 +64,9 @@ class AuthNotifier extends StateNotifier<AsyncValue<UserModel?>> {
     }
   }
 
-  Future<void> changePassword(String currentPassword, String newPassword) async {
+  Future<void> changePassword(String oldPassword, String newPassword) async {
     try {
-      await _repo.changePassword(currentPassword, newPassword);
+      await _repo.changePassword(oldPassword, newPassword);
     } catch (e, st) {
       rethrow;
     }

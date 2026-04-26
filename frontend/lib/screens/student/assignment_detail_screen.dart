@@ -80,7 +80,7 @@ class _AssignmentDetailScreenState extends ConsumerState<AssignmentDetailScreen>
                   // ─── Description ───────────────────────────────────────
                   const Text('Instructions', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, fontFamily: 'Inter')),
                   const SizedBox(height: 10),
-                  Text(assignment.description, style: const TextStyle(fontSize: 15, color: AppColors.textSecondary, fontFamily: 'Inter', height: 1.7)),
+                  LinkifiedText(assignment.description, style: const TextStyle(fontSize: 15, color: AppColors.textSecondary, fontFamily: 'Inter', height: 1.7)),
                   const SizedBox(height: 20),
 
                   // ─── Attachments ───────────────────────────────────────
