@@ -15,9 +15,11 @@ class StudentDashboard extends ConsumerStatefulWidget {
   @override
   ConsumerState<StudentDashboard> createState() => _StudentDashboardState();
 }
-
 class _StudentDashboardState extends ConsumerState<StudentDashboard> {
   String _selectedCategory = 'all';
+  bool _isSelectionMode = false;
+  final Set<String> _selectedReminders = {};
+
   final _categories = [
     {'id': 'all', 'label': 'All', 'icon': Icons.grid_view_rounded},
     {'id': 'announcement', 'label': 'Announcements', 'icon': Icons.campaign_outlined},
@@ -32,12 +34,49 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
     super.initState();
   }
 
+  void _toggleSelectionMode() {
+    setState(() {
+      _isSelectionMode = !_isSelectionMode;
+      if (!_isSelectionMode) _selectedReminders.clear();
+    });
+  }
+
+  Future<void> _deleteSelected() async {
+    if (_selectedReminders.isEmpty) return;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Selected?'),
+        content: Text('Delete ${_selectedReminders.length} items from your view?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete', style: TextStyle(color: AppColors.error))),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      for (final id in _selectedReminders) {
+        await ref.read(notificationProvider.notifier).deleteNotification(id);
+      }
+      _toggleSelectionMode();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
     final dashboardAsync = ref.watch(studentDashboardProvider);
 
     return Scaffold(
+      floatingActionButton: _isSelectionMode && _selectedReminders.isNotEmpty
+        ? FloatingActionButton.extended(
+            onPressed: _deleteSelected,
+            backgroundColor: AppColors.error,
+            label: Text('Delete (${_selectedReminders.length})'),
+            icon: const Icon(Icons.delete_sweep_rounded),
+          )
+        : null,
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(studentDashboardProvider.future),
         child: CustomScrollView(
@@ -48,6 +87,16 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
               floating: false,
               pinned: true,
               elevation: 0,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.logout_rounded, color: Colors.white),
+                  onPressed: () {
+                    ref.read(authStateProvider.notifier).logout();
+                    context.go('/login');
+                  },
+                ),
+                const SizedBox(width: 8),
+              ],
               flexibleSpace: FlexibleSpaceBar(
                 background: Container(
                   decoration: const BoxDecoration(
@@ -104,15 +153,6 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
               ),
               title: const Text('CampusSync', style: TextStyle(color: Colors.white, fontFamily: 'Inter')),
               backgroundColor: AppColors.primary,
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.logout_rounded, color: Colors.white),
-                  onPressed: () {
-                    ref.read(authStateProvider.notifier).logout();
-                    context.go('/login');
-                  },
-                ),
-              ],
             ),
 
             // ─── Category Filter ───────────────────────────────────────────
@@ -151,9 +191,29 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
               child: KeyedSubtree(
                 key: const ValueKey('student_dashboard_content'),
                 child: dashboardAsync.maybeWhen(
-                  data: (data) => _DashboardContent(data: data, selectedCategory: _selectedCategory),
+                  data: (data) => _DashboardContent(
+                    data: data, 
+                    selectedCategory: _selectedCategory,
+                    isSelectionMode: _isSelectionMode,
+                    selectedReminders: _selectedReminders,
+                    onToggle: (id) => setState(() {
+                      if (_selectedReminders.contains(id)) _selectedReminders.remove(id);
+                      else _selectedReminders.add(id);
+                    }),
+                    onToggleSelection: _toggleSelectionMode,
+                  ),
                   loading: () => dashboardAsync.hasValue 
-                      ? _DashboardContent(data: dashboardAsync.value!, selectedCategory: _selectedCategory)
+                      ? _DashboardContent(
+                          data: dashboardAsync.value!, 
+                          selectedCategory: _selectedCategory,
+                          isSelectionMode: _isSelectionMode,
+                          selectedReminders: _selectedReminders,
+                          onToggle: (id) => setState(() {
+                            if (_selectedReminders.contains(id)) _selectedReminders.remove(id);
+                            else _selectedReminders.add(id);
+                          }),
+                          onToggleSelection: _toggleSelectionMode,
+                        )
                       : const _DashboardSkeleton(),
                   error: (e, _) => _ErrorView(message: e.toString(), onRetry: () => ref.invalidate(studentDashboardProvider)),
                   orElse: () => const _DashboardSkeleton(),
@@ -174,13 +234,25 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
   }
 }
 
-class _DashboardContent extends StatelessWidget {
+class _DashboardContent extends ConsumerWidget {
   final Map<String, dynamic> data;
   final String selectedCategory;
-  const _DashboardContent({required this.data, required this.selectedCategory});
+  final bool isSelectionMode;
+  final Set<String> selectedReminders;
+  final Function(String) onToggle;
+  final VoidCallback onToggleSelection;
+
+  const _DashboardContent({
+    required this.data, 
+    required this.selectedCategory,
+    this.isSelectionMode = false,
+    this.selectedReminders = const {},
+    required this.onToggle,
+    required this.onToggleSelection,
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final stats = data['stats'] ?? {};
     final rawReminders = (data['latestReminders'] as List?)?.map((r) => ReminderModel.fromJson(r)).toList() ?? [];
     final upcomingAssignments = (data['upcomingAssignments'] as List?)?.map((a) => AssignmentModel.fromJson(a)).toList() ?? [];
@@ -241,17 +313,43 @@ class _DashboardContent extends StatelessWidget {
                 ),
               ],
             ),
-            child: _ReminderCard(reminder: r, onTap: () => context.push('/student/reminder/${r.id}')),
+            child: _ReminderCard(
+              reminder: r, 
+              isSelected: selectedReminders.contains(r.notificationId),
+              isSelectionMode: isSelectionMode,
+              onSelect: () => onToggle(r.notificationId!),
+              onTap: () {
+                if (isSelectionMode) {
+                  onToggle(r.notificationId!);
+                } else {
+                  context.push('/student/reminder/${r.id}');
+                }
+              }
+            ),
           )),
         ],
 
         // ─── Latest Reminders ─────────────────────────────────────────────
-        _SectionHeader(title: '🔔 Latest Reminders', onSeeAll: () => context.go('/student-alerts')),
+        _SectionHeader(
+          title: '🔔 Latest Reminders', 
+          onSeeAll: () => context.go('/student-alerts'),
+          trailing: TextButton.icon(
+            onPressed: onToggleSelection,
+            icon: Icon(isSelectionMode ? Icons.done_all_rounded : Icons.checklist_rounded, size: 16),
+            label: Text(isSelectionMode ? 'Done' : 'Select', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
+        ),
         if (latestReminders.isEmpty)
           const EmptyStateWidget(icon: Icons.notifications_none, message: 'No reminders yet')
         else
           ...latestReminders.map((r) => Slidable(
             key: ValueKey(r.id),
+            enabled: !isSelectionMode,
             endActionPane: ActionPane(
               motion: const ScrollMotion(),
               children: [
@@ -268,7 +366,19 @@ class _DashboardContent extends StatelessWidget {
                 ),
               ],
             ),
-            child: _ReminderCard(reminder: r, onTap: () => context.push('/student/reminder/${r.id}')),
+            child: _ReminderCard(
+              reminder: r, 
+              isSelected: selectedReminders.contains(r.notificationId),
+              isSelectionMode: isSelectionMode,
+              onSelect: () => onToggle(r.notificationId!),
+              onTap: () {
+                if (isSelectionMode) {
+                  onToggle(r.notificationId!);
+                } else {
+                  context.push('/student/reminder/${r.id}');
+                }
+              }
+            ),
           )),
 
         // ─── Upcoming Assignments ─────────────────────────────────────────
@@ -326,7 +436,8 @@ class _StatCard extends StatelessWidget {
 class _SectionHeader extends StatelessWidget {
   final String title;
   final VoidCallback? onSeeAll;
-  const _SectionHeader({required this.title, this.onSeeAll});
+  final Widget? trailing;
+  const _SectionHeader({required this.title, this.onSeeAll, this.trailing});
 
   @override
   Widget build(BuildContext context) {
@@ -336,11 +447,19 @@ class _SectionHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Inter', color: AppColors.textPrimary)),
-          if (onSeeAll != null)
-            GestureDetector(
-              onTap: onSeeAll,
-              child: const Text('See all', style: TextStyle(fontSize: 13, color: AppColors.primary, fontFamily: 'Inter', fontWeight: FontWeight.w500)),
-            ),
+          Row(
+            children: [
+              if (trailing != null) ...[
+                trailing!,
+                if (onSeeAll != null) const SizedBox(width: 12),
+              ],
+              if (onSeeAll != null)
+                GestureDetector(
+                  onTap: onSeeAll,
+                  child: const Text('See all', style: TextStyle(fontSize: 13, color: AppColors.primary, fontFamily: 'Inter', fontWeight: FontWeight.w500)),
+                ),
+            ],
+          ),
         ],
       ),
     );
@@ -350,7 +469,17 @@ class _SectionHeader extends StatelessWidget {
 class _ReminderCard extends StatelessWidget {
   final ReminderModel reminder;
   final VoidCallback onTap;
-  const _ReminderCard({required this.reminder, required this.onTap});
+  final bool isSelected;
+  final bool isSelectionMode;
+  final VoidCallback? onSelect;
+
+  const _ReminderCard({
+    required this.reminder, 
+    required this.onTap,
+    this.isSelected = false,
+    this.isSelectionMode = false,
+    this.onSelect,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -360,17 +489,27 @@ class _ReminderCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isSelected ? AppColors.primaryContainer.withOpacity(0.3) : Colors.white,
             borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-            border: Border.all(color: AppColors.divider),
+            border: Border.all(color: isSelected ? AppColors.primary : AppColors.divider),
             boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))],
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (isSelectionMode) ...[
+                Checkbox(
+                  value: isSelected, 
+                  onChanged: (_) => onSelect?.call(),
+                  activeColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                ),
+                const SizedBox(width: 8),
+              ],
               Container(
                 width: 4,
                 height: 48,
@@ -397,7 +536,7 @@ class _ReminderCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.textHint),
+              if (!isSelectionMode) const Icon(Icons.chevron_right_rounded, color: AppColors.textHint),
             ],
           ),
         ),
