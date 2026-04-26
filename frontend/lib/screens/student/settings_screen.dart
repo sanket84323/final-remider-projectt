@@ -43,33 +43,99 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: 'Force logout from all other devices',
             onTap: () => _showConfirmation(context, 'Reset Security Keys?', 'This will sign you out of all other devices.', () {}),
           ),
-          _SectionHeader(title: 'Notifications'),
-          _SettingsTile(icon: Icons.notifications_outlined, title: 'Push Notifications', subtitle: 'Receive alerts for reminders', trailing: Switch(value: true, onChanged: (_) {}, activeColor: AppColors.primary)),
-          _SettingsTile(icon: Icons.priority_high_rounded, title: 'Urgent Alerts', subtitle: 'Full-screen alerts for urgent notices', trailing: Switch(value: true, onChanged: (_) {}, activeColor: AppColors.primary)),
-          _SectionHeader(title: 'Data & Storage'),
+          _SectionHeader(title: 'Support & Contact'),
           _SettingsTile(
-            icon: Icons.storage_outlined, 
-            title: 'Offline Cache', 
-            subtitle: 'Store recent reminders for offline access', 
-            trailing: Switch(
-              value: _offlineCache, 
-              onChanged: (v) => setState(() => _offlineCache = v),
-              activeColor: AppColors.primary,
-            )
+            icon: Icons.person_outline_rounded, 
+            title: 'Lead Developer', 
+            subtitle: 'Sanket Solanke', 
+            trailing: const Icon(Icons.verified_rounded, color: Colors.blue, size: 18),
+            onTap: () => _showDeveloperInfo(context),
           ),
           _SettingsTile(
-            icon: Icons.delete_outline_rounded, 
-            title: 'Clear Cache', 
-            subtitle: 'Remove cached data and logout', 
-            trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textHint),
-            onTap: () => _showConfirmation(context, 'Clear All Cache?', 'This will remove all offline data and log you out for security.', () async {
-              await ref.read(authStateProvider.notifier).logout();
-              if (mounted) context.go('/login');
-            }),
+            icon: Icons.mail_outline_rounded, 
+            title: 'Technical Support', 
+            subtitle: 'solankesanket8432@gmail.com', 
+            trailing: const Icon(Icons.copy_rounded, color: AppColors.textHint, size: 18),
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Email copied to clipboard')));
+            },
           ),
           _SectionHeader(title: 'About'),
-          _SettingsTile(icon: Icons.info_outline, title: 'App Version', subtitle: '1.0.0 (Build 1)', trailing: null),
-          _SettingsTile(icon: Icons.privacy_tip_outlined, title: 'Privacy Policy', subtitle: '', trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textHint)),
+          _SettingsTile(
+            icon: Icons.info_outline, 
+            title: 'About CampusSync', 
+            subtitle: 'Learn more about the project', 
+            trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textHint),
+            onTap: () => _showAboutDialog(context),
+          ),
+          _SettingsTile(
+            icon: Icons.privacy_tip_outlined, 
+            title: 'Privacy Policy', 
+            subtitle: 'How we handle your data', 
+            trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textHint),
+            onTap: () => _showPrivacyPolicy(context),
+          ),
+          _SettingsTile(icon: Icons.code_rounded, title: 'App Version', subtitle: '1.0.0 (Build 1)', trailing: null),
+        ],
+      ),
+    );
+  }
+
+  void _showAboutDialog(BuildContext context) {
+    showAboutDialog(
+      context: context,
+      applicationName: 'CampusSync',
+      applicationVersion: '1.0.0',
+      applicationIcon: const Icon(Icons.school_rounded, color: AppColors.primary, size: 40),
+      children: [
+        const Text(
+          'CampusSync is an advanced academic management and notification system designed to streamline communication between the HOD, Teachers, and Students.',
+          style: TextStyle(fontSize: 13),
+        ),
+        const SizedBox(height: 12),
+        const Text('Features:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+        const Text('• Real-time Department Analytics\n• Secure Assignment Submission\n• Priority Notification System\n• Multi-role Dashboard support', style: TextStyle(fontSize: 13)),
+      ],
+    );
+  }
+
+  void _showDeveloperInfo(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Developer Profile'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircleAvatar(radius: 32, backgroundColor: AppColors.primary, child: Icon(Icons.person, color: Colors.white, size: 40)),
+            const SizedBox(height: 16),
+            const Text('Sanket Solanke', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            const Text('Lead Full-Stack Developer', style: TextStyle(color: AppColors.textHint, fontSize: 13)),
+            const SizedBox(height: 16),
+            const Text('App Created Date:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+            const Text('April 26, 2026', style: TextStyle(fontSize: 14, color: AppColors.primary)),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close')),
+        ],
+      ),
+    );
+  }
+
+  void _showPrivacyPolicy(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Privacy Policy'),
+        content: const SingleChildScrollView(
+          child: Text(
+            'Your privacy is important to us. CampusSync only collects necessary academic data like your name, email, and class enrollment to facilitate communication. We do not share your personal data with third-party advertisers. All assignment submissions are stored securely and are only accessible by your respective teachers and the department HOD.',
+            style: TextStyle(fontSize: 13),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close')),
         ],
       ),
     );

@@ -33,12 +33,23 @@ const getStudentDashboard = async (req, res) => {
       ],
     };
 
-    const [latestReminders, upcomingAssignments, unreadCount, pinnedReminders] = await Promise.all([
+    const [latestRemindersRaw, upcomingAssignments, unreadCount, pinnedRemindersRaw] = await Promise.all([
       Reminder.find(audienceFilter).populate('createdBy', 'name').sort({ createdAt: -1 }).limit(5),
       Assignment.find({ ...assignmentFilter, dueDate: { $gte: now } }).populate('createdBy', 'name').sort({ dueDate: 1 }).limit(5),
       Notification.countDocuments({ userId: user._id, readStatus: false }),
       Reminder.find({ ...audienceFilter, isPinned: true }).populate('createdBy', 'name').limit(3),
     ]);
+
+    // Attach notification IDs to reminders for deletion support
+    const attachNotifId = async (reminders) => {
+      return Promise.all(reminders.map(async (r) => {
+        const notif = await Notification.findOne({ userId: user._id, reminderId: r._id });
+        return { ...r.toObject(), notificationId: notif ? notif._id : null };
+      }));
+    };
+
+    const latestReminders = await attachNotifId(latestRemindersRaw);
+    const pinnedReminders = await attachNotifId(pinnedRemindersRaw);
 
     const pendingAssignments = await Assignment.countDocuments({
       ...assignmentFilter,

@@ -40,10 +40,9 @@ class ProfileScreen extends ConsumerWidget {
                 child: Column(children: [
                   _InfoCard(items: [
                     _InfoItem(icon: Icons.email_outlined, label: 'Email', value: user.email),
-                    if (user.className != null) _InfoItem(icon: Icons.class_outlined, label: 'Class', value: user.className!),
-                    if (user.section != null) _InfoItem(icon: Icons.business_outlined, label: 'Department', value: user.section!),
+                    if (user.className != null) _InfoItem(icon: Icons.class_outlined, label: 'Class', value: user.className!.replaceAll('AIDS ', '')),
+                    _InfoItem(icon: Icons.business_outlined, label: 'Department', value: 'AIDS'),
                     if (user.rollNumber != null) _InfoItem(icon: Icons.badge_outlined, label: 'Roll Number', value: user.rollNumber!),
-                    // if (user.department != null) _InfoItem(icon: Icons.business_outlined, label: 'Department', value: user.department!),
                   ]),
                   const SizedBox(height: 16),
                   _ActionCard(items: [
