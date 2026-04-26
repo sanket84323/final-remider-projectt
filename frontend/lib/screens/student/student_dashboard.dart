@@ -8,6 +8,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/app_providers.dart';
 import '../../data/models/models.dart';
 import '../../widgets/app_widgets.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class StudentDashboard extends ConsumerStatefulWidget {
   const StudentDashboard({super.key});
@@ -222,7 +223,26 @@ class _DashboardContent extends StatelessWidget {
         // ─── Pinned Notices ───────────────────────────────────────────────
         if (pinnedReminders.isNotEmpty) ...[
           _SectionHeader(title: '📌 Pinned Notices', onSeeAll: () => context.go('/student-alerts')),
-          ...pinnedReminders.map((r) => _ReminderCard(reminder: r, onTap: () => context.push('/student/reminder/${r.id}'))),
+          ...pinnedReminders.map((r) => Slidable(
+            key: ValueKey('pinned_${r.id}'),
+            endActionPane: ActionPane(
+              motion: const ScrollMotion(),
+              children: [
+                SlidableAction(
+                  onPressed: (_) {
+                    if (r.notificationId != null) {
+                      ref.read(notificationProvider.notifier).deleteNotification(r.notificationId!);
+                    }
+                  },
+                  backgroundColor: AppColors.error,
+                  foregroundColor: Colors.white,
+                  icon: Icons.delete_rounded,
+                  label: 'Delete',
+                ),
+              ],
+            ),
+            child: _ReminderCard(reminder: r, onTap: () => context.push('/student/reminder/${r.id}')),
+          )),
         ],
 
         // ─── Latest Reminders ─────────────────────────────────────────────
@@ -230,7 +250,26 @@ class _DashboardContent extends StatelessWidget {
         if (latestReminders.isEmpty)
           const EmptyStateWidget(icon: Icons.notifications_none, message: 'No reminders yet')
         else
-          ...latestReminders.map((r) => _ReminderCard(reminder: r, onTap: () => context.push('/student/reminder/${r.id}'))),
+          ...latestReminders.map((r) => Slidable(
+            key: ValueKey(r.id),
+            endActionPane: ActionPane(
+              motion: const ScrollMotion(),
+              children: [
+                SlidableAction(
+                  onPressed: (_) {
+                    if (r.notificationId != null) {
+                      ref.read(notificationProvider.notifier).deleteNotification(r.notificationId!);
+                    }
+                  },
+                  backgroundColor: AppColors.error,
+                  foregroundColor: Colors.white,
+                  icon: Icons.delete_rounded,
+                  label: 'Delete',
+                ),
+              ],
+            ),
+            child: _ReminderCard(reminder: r, onTap: () => context.push('/student/reminder/${r.id}')),
+          )),
 
         // ─── Upcoming Assignments ─────────────────────────────────────────
         _SectionHeader(title: '📚 Upcoming Assignments', onSeeAll: null),

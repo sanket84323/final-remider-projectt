@@ -6,6 +6,7 @@ import '../../core/constants/app_constants.dart';
 import '../../providers/app_providers.dart';
 import '../../data/models/models.dart';
 import '../../widgets/app_widgets.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class NotificationListScreen extends ConsumerStatefulWidget {
   const NotificationListScreen({super.key});
@@ -72,14 +73,40 @@ class _NotificationListScreenState extends ConsumerState<NotificationListScreen>
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
                       child: Text(date, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textHint, fontFamily: 'Inter', letterSpacing: 0.5)),
                     ),
-                    ...items.map((n) => _NotifTile(
-                      notification: n,
-                      onTap: () {
-                        ref.read(notificationProvider.notifier).markAsRead(n.id);
-                        if (n.reminderId != null) context.push('/student/reminder/${n.reminderId}');
-                        if (n.assignmentId != null) context.push('/student/assignment/${n.assignmentId}');
-                      },
-                    )),
+                    ...items.map((n) {
+                      final isAssignment = n.assignmentId != null;
+                      if (isAssignment) {
+                        return _NotifTile(
+                          notification: n,
+                          onTap: () {
+                            ref.read(notificationProvider.notifier).markAsRead(n.id);
+                            context.push('/student/assignment/${n.assignmentId}');
+                          },
+                        );
+                      }
+                      return Slidable(
+                        key: ValueKey(n.id),
+                        endActionPane: ActionPane(
+                          motion: const ScrollMotion(),
+                          children: [
+                            SlidableAction(
+                              onPressed: (_) => ref.read(notificationProvider.notifier).deleteNotification(n.id),
+                              backgroundColor: AppColors.error,
+                              foregroundColor: Colors.white,
+                              icon: Icons.delete_rounded,
+                              label: 'Delete',
+                            ),
+                          ],
+                        ),
+                        child: _NotifTile(
+                          notification: n,
+                          onTap: () {
+                            ref.read(notificationProvider.notifier).markAsRead(n.id);
+                            context.push('/student/reminder/${n.reminderId}');
+                          },
+                        ),
+                      );
+                    }),
                   ],
                 );
               },

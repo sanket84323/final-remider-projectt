@@ -66,6 +66,7 @@ class ReminderModel {
   final List<AttachmentModel> attachments;
   final int? readCount;
   final bool isRead;
+  final String? notificationId;
 
   const ReminderModel({
     required this.id, required this.title, required this.description,
@@ -73,6 +74,7 @@ class ReminderModel {
     required this.isPinned, required this.tags, required this.createdAt,
     this.scheduledAt, this.deadlineAt, this.createdBy,
     this.attachments = const [], this.readCount, this.isRead = false,
+    this.notificationId,
   });
 
   factory ReminderModel.fromJson(Map<String, dynamic> json) {
@@ -92,6 +94,7 @@ class ReminderModel {
       attachments: (json['attachments'] as List?)?.map((a) => AttachmentModel.fromJson(a)).toList() ?? [],
       readCount: json['readCount'],
       isRead: json['isRead'] ?? false,
+      notificationId: json['notificationId'],
     );
   }
 }

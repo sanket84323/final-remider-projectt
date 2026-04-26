@@ -128,6 +128,14 @@ class NotificationNotifier extends StateNotifier<AsyncValue<List<NotificationMod
     ref.invalidate(studentDashboardProvider);
     await loadNotifications(refresh: true);
   }
+
+  Future<void> deleteNotification(String id) async {
+    await _repo.deleteNotification(id);
+    state = AsyncValue.data(
+      state.valueOrNull?.where((n) => n.id != id).toList() ?? [],
+    );
+    ref.invalidate(studentDashboardProvider);
+  }
 }
 
 // ─── Dashboard Provider ───────────────────────────────────────────────────────
