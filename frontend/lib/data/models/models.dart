@@ -59,6 +59,7 @@ class ReminderModel {
   final String status;
   final bool isPinned;
   final List<String> tags;
+  final Map<String, dynamic> targetAudience;
   final DateTime createdAt;
   final DateTime? scheduledAt;
   final DateTime? deadlineAt;
@@ -71,8 +72,8 @@ class ReminderModel {
   const ReminderModel({
     required this.id, required this.title, required this.description,
     required this.priority, required this.category, required this.status,
-    required this.isPinned, required this.tags, required this.createdAt,
-    this.scheduledAt, this.deadlineAt, this.createdBy,
+    required this.isPinned, required this.tags, required this.targetAudience,
+    required this.createdAt, this.scheduledAt, this.deadlineAt, this.createdBy,
     this.attachments = const [], this.readCount, this.isRead = false,
     this.notificationId,
   });
@@ -87,6 +88,7 @@ class ReminderModel {
       status: json['status'] ?? 'sent',
       isPinned: json['isPinned'] ?? false,
       tags: List<String>.from(json['tags'] ?? []),
+      targetAudience: Map<String, dynamic>.from(json['targetAudience'] ?? {}),
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       scheduledAt: json['scheduledAt'] != null ? DateTime.tryParse(json['scheduledAt']) : null,
       deadlineAt: json['deadlineAt'] != null ? DateTime.tryParse(json['deadlineAt']) : null,
@@ -105,6 +107,7 @@ class AssignmentModel {
   final String description;
   final String? subject;
   final DateTime dueDate;
+  final Map<String, dynamic> targetAudience;
   final bool isCompleted;
   final bool isPending;
   final bool isOverdue;
@@ -115,7 +118,8 @@ class AssignmentModel {
 
   const AssignmentModel({
     required this.id, required this.title, required this.description,
-    required this.dueDate, required this.isCompleted, required this.isPending, required this.isOverdue,
+    required this.dueDate, required this.targetAudience, required this.isCompleted, 
+    required this.isPending, required this.isOverdue,
     this.subject, this.attachments = const [], this.createdBy,
     this.completedCount = 0, required this.createdAt,
   });
@@ -127,6 +131,7 @@ class AssignmentModel {
       description: json['description'] ?? '',
       subject: json['subject'],
       dueDate: DateTime.tryParse(json['dueDate'] ?? '') ?? DateTime.now(),
+      targetAudience: Map<String, dynamic>.from(json['targetAudience'] ?? {}),
       isCompleted: json['isCompleted'] ?? false,
       isPending: json['isPending'] ?? false,
       isOverdue: json['isOverdue'] ?? false,

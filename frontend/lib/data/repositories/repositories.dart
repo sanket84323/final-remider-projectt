@@ -67,6 +67,11 @@ class AssignmentRepository {
     return AssignmentModel.fromJson(response.data['data']);
   }
 
+  Future<AssignmentModel> updateAssignment(String id, Map<String, dynamic> data) async {
+    final response = await _api.put('/assignments/$id', data: data);
+    return AssignmentModel.fromJson(response.data['data']);
+  }
+
   Future<void> markComplete(String id, {String? note}) async {
     await _api.put('/assignments/$id/complete', data: {'note': note});
   }

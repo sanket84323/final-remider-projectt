@@ -48,7 +48,7 @@ const getAllUsers = async (req, res) => {
     // ─── Auto-assign random class to students without one ───────────────────
     if (role === 'student') {
       const Department = require('../models/Department');
-      const aidsDept = await Department.findOne({ code: /AIDS/i });
+      const aidsDept = await Department.findOne({ code: { $in: [/AIDS/i, /AI&DS/i] } });
       if (aidsDept && aidsDept.classes && aidsDept.classes.length > 0) {
         const studentsWithoutClass = await User.find({ 
           role: 'student', 

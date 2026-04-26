@@ -5,7 +5,7 @@ import '../../core/constants/app_constants.dart';
 import '../../data/services/api_service.dart';
 
 final _classesProvider = FutureProvider<List<String>>((ref) async {
-  final response = await ApiService().get('/departments/69ed0cdf876ade57f7981861/classes');
+  final response = await ApiService().get('/departments/69ed6632b8a6312aac7c38e8/classes');
   return List<String>.from(response.data['data']);
 });
 
@@ -72,7 +72,7 @@ class ClassManagementScreen extends ConsumerWidget {
             onPressed: () async {
               if (ctrl.text.isEmpty) return;
               try {
-                await ApiService().post('/departments/69ed0cdf876ade57f7981861/classes', data: {'className': ctrl.text.trim()});
+                await ApiService().post('/departments/69ed6632b8a6312aac7c38e8/classes', data: {'className': ctrl.text.trim()});
                 ref.invalidate(_classesProvider);
                 if (ctx.mounted) Navigator.pop(ctx);
               } catch (e) {
@@ -141,7 +141,7 @@ class ClassManagementScreen extends ConsumerWidget {
                   return;
                 }
                 try {
-                  await ApiService().delete('/departments/69ed0cdf876ade57f7981861/classes', data: {
+                  await ApiService().delete('/departments/69ed6632b8a6312aac7c38e8/classes', data: {
                     'className': className,
                     'action': action,
                     'targetClass': targetClass

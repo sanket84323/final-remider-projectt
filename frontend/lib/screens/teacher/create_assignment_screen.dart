@@ -7,7 +7,8 @@ import '../../data/repositories/repositories.dart';
 import '../../providers/app_providers.dart';
 
 class CreateAssignmentScreen extends ConsumerStatefulWidget {
-  const CreateAssignmentScreen({super.key});
+  final String? assignmentId;
+  const CreateAssignmentScreen({super.key, this.assignmentId});
 
   @override
   ConsumerState<CreateAssignmentScreen> createState() => _CreateAssignmentScreenState();
@@ -21,8 +22,39 @@ class _CreateAssignmentScreenState extends ConsumerState<CreateAssignmentScreen>
   final _classCtrl = TextEditingController();
   DateTime? _dueDate;
   bool _isLoading = false;
-  String? _selectedClassDropdown;
-  final List<String> _classOptions = ['All Classes', ...AppStrings.studentClasses];
+  final List<String> _selectedClasses = [];
+  bool _shouldNotify = true;
+  final List<String> _classOptions = AppStrings.studentClasses;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.assignmentId != null) {
+      _loadAssignment();
+    }
+  }
+
+  Future<void> _loadAssignment() async {
+    setState(() => _isLoading = true);
+    try {
+      final repo = AssignmentRepository();
+      final assignment = await repo.getAssignmentById(widget.assignmentId!);
+      setState(() {
+        _titleCtrl.text = assignment.title;
+        _descCtrl.text = assignment.description;
+        _subjectCtrl.text = assignment.subject ?? '';
+        _dueDate = assignment.dueDate;
+        final classes = (assignment.targetAudience['classNames'] as List?)?.map((c) => c.toString()).toList() ?? [];
+        _selectedClasses.clear();
+        _selectedClasses.addAll(classes);
+        _shouldNotify = false; // Usually don't want to re-notify on edit by default
+      });
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error loading assignment: $e')));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   Future<void> _pickDueDate() async {
     final date = await showDatePicker(context: context, initialDate: DateTime.now().add(const Duration(days: 3)), firstDate: DateTime.now(), lastDate: DateTime.now().add(const Duration(days: 365)));
@@ -35,26 +67,38 @@ class _CreateAssignmentScreenState extends ConsumerState<CreateAssignmentScreen>
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_dueDate == null) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please set a due date'))); return; }
+    if (_selectedClasses.isEmpty) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select at least one class'))); return; }
 
     setState(() => _isLoading = true);
     try {
-      await AssignmentRepository().createAssignment({
+      final repo = AssignmentRepository();
+      final data = {
         'title': _titleCtrl.text.trim(),
         'description': _descCtrl.text.trim(),
         'subject': _subjectCtrl.text.trim(),
         'dueDate': _dueDate!.toIso8601String(),
+        'shouldNotify': _shouldNotify,
         'targetAudience': {
-          'type': (_selectedClassDropdown == 'All Classes' || _selectedClassDropdown == null) 
-              ? 'all' 
-              : 'class',
-          if (_selectedClassDropdown != 'All Classes' && _selectedClassDropdown != null) 
-            'className': _selectedClassDropdown == 'Other' ? _classCtrl.text.trim() : _selectedClassDropdown,
+          'type': 'class',
+          'classNames': _selectedClasses,
         },
-      });
+      };
+
+      if (widget.assignmentId != null) {
+        await repo.updateAssignment(widget.assignmentId!, data);
+      } else {
+        await repo.createAssignment(data);
+      }
+
       ref.invalidate(assignmentListProvider);
       ref.invalidate(teacherDashboardProvider);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('✅ Assignment created!'), backgroundColor: AppColors.success));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(widget.assignmentId != null ? '✅ Assignment updated!' : '✅ Assignment created!'), 
+            backgroundColor: AppColors.success
+          )
+        );
         context.go('/teacher');
       }
     } catch (e) {
@@ -66,15 +110,19 @@ class _CreateAssignmentScreenState extends ConsumerState<CreateAssignmentScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isEdit = widget.assignmentId != null;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Assignment'),
+        title: Text(isEdit ? 'Edit Assignment' : 'Create Assignment'),
         leading: IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => context.pop()),
         actions: [
           if (_isLoading)
             const Padding(padding: EdgeInsets.all(14), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)))
           else
-            TextButton(onPressed: _submit, child: const Text('Create', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
+            TextButton(
+              onPressed: _submit, 
+              child: Text(isEdit ? 'Update' : 'Create', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16))
+            ),
         ],
       ),
       body: Form(
@@ -99,24 +147,52 @@ class _CreateAssignmentScreenState extends ConsumerState<CreateAssignmentScreen>
               maxLines: 6,
               validator: (v) => v == null || v.isEmpty ? 'Description required' : null,
             ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _selectedClassDropdown,
-              decoration: const InputDecoration(
-                labelText: 'Target Class',
-                prefixIcon: Icon(Icons.class_outlined),
-              ),
-              items: _classOptions.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-              onChanged: (val) => setState(() => _selectedClassDropdown = val),
+            const SizedBox(height: 24),
+            // ─── Multi-Class Selection ──────────────────────────────────────
+            const Text('TARGET CLASSES', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.textHint, letterSpacing: 1.5)),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: _classOptions.map((className) {
+                final isSelected = _selectedClasses.contains(className);
+                return FilterChip(
+                  label: Text(className, style: TextStyle(color: isSelected ? Colors.white : AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w600)),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    setState(() {
+                      if (selected) {
+                        _selectedClasses.add(className);
+                      } else {
+                        _selectedClasses.remove(className);
+                      }
+                    });
+                  },
+                  selectedColor: AppColors.accent,
+                  checkmarkColor: Colors.white,
+                  backgroundColor: AppColors.divider.withOpacity(0.3),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimens.radiusFull)),
+                );
+              }).toList(),
             ),
-            if (_selectedClassDropdown == 'Other') ...[
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _classCtrl,
-                decoration: const InputDecoration(labelText: 'Custom Class Name', prefixIcon: Icon(Icons.class_outlined)),
+            const SizedBox(height: 24),
+            // ─── Notification Toggle ─────────────────────────────────────────
+            Container(
+              decoration: BoxDecoration(
+                color: _shouldNotify ? AppColors.success.withOpacity(0.05) : AppColors.divider.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+                border: Border.all(color: _shouldNotify ? AppColors.success.withOpacity(0.2) : AppColors.divider),
               ),
-            ],
-            const SizedBox(height: 20),
+              child: SwitchListTile(
+                title: const Text('Send Notification', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, fontFamily: 'Inter')),
+                subtitle: Text(_shouldNotify ? 'Students will be notified immediately.' : 'No notification will be sent.', style: const TextStyle(fontSize: 11, fontFamily: 'Inter')),
+                secondary: Icon(_shouldNotify ? Icons.notifications_active_rounded : Icons.notifications_off_rounded, color: _shouldNotify ? AppColors.success : AppColors.textHint),
+                value: _shouldNotify,
+                onChanged: (v) => setState(() => _shouldNotify = v),
+                activeColor: AppColors.success,
+              ),
+            ),
+            const SizedBox(height: 24),
             // ─── Due Date Picker ────────────────────────────────────────────
             GestureDetector(
               onTap: _pickDueDate,
@@ -143,8 +219,8 @@ class _CreateAssignmentScreenState extends ConsumerState<CreateAssignmentScreen>
             const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: _isLoading ? null : _submit,
-              icon: const Icon(Icons.assignment_add),
-              label: const Text('Create Assignment'),
+              icon: Icon(isEdit ? Icons.save_rounded : Icons.assignment_add),
+              label: Text(isEdit ? 'Update Assignment' : 'Create Assignment'),
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),
             ),
           ],

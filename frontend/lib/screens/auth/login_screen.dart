@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_constants.dart';
 import '../../providers/auth_provider.dart';
+import '../../data/services/api_service.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -18,6 +19,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _obscurePass = true;
   bool _isLoading = false;
   String? _errorMessage;
+  
+  Map<String, dynamic>? _demoCreds;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDemoCreds();
+  }
+
+  Future<void> _fetchDemoCreds() async {
+    try {
+      final response = await ApiService().get('/auth/demo-credentials');
+      if (mounted) {
+        setState(() => _demoCreds = response.data['data']);
+      }
+    } catch (e) {
+      debugPrint('Failed to fetch demo creds: $e');
+    }
+  }
 
   @override
   void dispose() {
@@ -168,29 +188,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 32),
 
-              // ─── Demo Credentials ─────────────────────────────────────────
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryContainer,
-                  borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+              // ─── Demo Credentials (Fetched from DB) ───────────────────────
+              if (_demoCreds != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryContainer,
+                    borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+                    border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(children: [
+                        const Icon(Icons.info_outline, color: AppColors.primary, size: 16),
+                        const SizedBox(width: 6),
+                        const Text('Demo Accounts (Tap to autofill)', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.primary, fontFamily: 'Inter', fontSize: 13)),
+                      ]),
+                      const SizedBox(height: 12),
+                      _credTile('Admin', _demoCreds!['admin']['email'], _demoCreds!['admin']['password']),
+                      _credTile('Teacher', _demoCreds!['teacher']['email'], _demoCreds!['teacher']['password']),
+                      _credTile('Student', _demoCreds!['student']['email'], _demoCreds!['student']['password']),
+                    ],
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(children: [
-                      const Icon(Icons.info_outline, color: AppColors.primary, size: 16),
-                      const SizedBox(width: 6),
-                      const Text('Demo Credentials', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.primary, fontFamily: 'Inter', fontSize: 13)),
-                    ]),
-                    const SizedBox(height: 8),
-                    _credTile('Admin', 'admin@campussync.edu', 'Admin@123'),
-                    _credTile('Teacher', 'anita@campussync.edu', 'Teacher@123'),
-                    _credTile('Student', 'arjun@student.edu', 'Student@123'),
-                  ],
-                ),
-              ),
+              ],
             ],
           ),
         ),
@@ -199,13 +221,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Widget _credTile(String role, String email, String pass) => Padding(
-    padding: const EdgeInsets.only(top: 4),
-    child: GestureDetector(
+    padding: const EdgeInsets.only(top: 6),
+    child: InkWell(
       onTap: () {
         _emailCtrl.text = email;
         _passCtrl.text = pass;
       },
-      child: Text('• $role: $email / $pass', style: const TextStyle(fontSize: 12, color: AppColors.primary, fontFamily: 'Inter')),
+      borderRadius: BorderRadius.circular(4),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(
+          children: [
+            const Text('• ', style: TextStyle(color: AppColors.primary)),
+            Text('$role: ', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primary, fontFamily: 'Inter')),
+            Expanded(child: Text('$email / $pass', style: const TextStyle(fontSize: 12, color: AppColors.primary, fontFamily: 'Inter'))),
+          ],
+        ),
+      ),
     ),
   );
 }

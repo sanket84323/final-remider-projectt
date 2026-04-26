@@ -7,6 +7,7 @@ import '../../core/constants/app_constants.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/app_providers.dart';
 import '../../data/models/models.dart';
+import '../../data/repositories/repositories.dart';
 import '../../widgets/app_widgets.dart';
 
 class TeacherDashboard extends ConsumerStatefulWidget {
@@ -37,12 +38,12 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
               expandedHeight: 180,
               pinned: true,
               elevation: 0,
-              backgroundColor: const Color(0xFF004D40),
+              backgroundColor: const Color(0xFF1A237E),
               title: const Text('Faculty Command Center', style: TextStyle(color: Colors.white, fontFamily: 'Inter', fontWeight: FontWeight.w700, fontSize: 18)),
               actions: [
                 IconButton(
                   icon: const Icon(Icons.settings_rounded, color: Colors.white),
-                  onPressed: () => context.push('/student/settings'),
+                  onPressed: () => context.push('/teacher-profile'),
                 ),
                 IconButton(
                   icon: const Icon(Icons.logout_rounded, color: Colors.white),
@@ -59,7 +60,7 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFF00332E), Color(0xFF004D40), Color(0xFF00695C)],
+                      colors: [Color(0xFF1A237E), Color(0xFF311B92), Color(0xFF4527A0)],
                     ),
                   ),
                   child: Stack(
@@ -143,15 +144,15 @@ class _TeacherDashboardState extends ConsumerState<TeacherDashboard> {
   }
 }
 
-class _TeacherDashboardContent extends StatefulWidget {
+class _TeacherDashboardContent extends ConsumerStatefulWidget {
   final Map<String, dynamic> data;
   const _TeacherDashboardContent({required this.data});
 
   @override
-  State<_TeacherDashboardContent> createState() => _TeacherDashboardContentState();
+  ConsumerState<_TeacherDashboardContent> createState() => _TeacherDashboardContentState();
 }
 
-class _TeacherDashboardContentState extends State<_TeacherDashboardContent> {
+class _TeacherDashboardContentState extends ConsumerState<_TeacherDashboardContent> {
   String _scheduledSearch = '';
   String _sentSearch = '';
   String _assignmentSearch = '';
@@ -159,6 +160,43 @@ class _TeacherDashboardContentState extends State<_TeacherDashboardContent> {
   bool _isSearchingScheduled = false;
   bool _isSearchingSent = false;
   bool _isSearchingAssignments = false;
+  bool _isSearchingHistory = false;
+  String _historySearch = '';
+
+  Future<void> _confirmDelete(BuildContext context, String type, String id) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirm Delete', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w700)),
+        content: Text('Are you sure you want to delete this $type? This action cannot be undone.', style: const TextStyle(fontFamily: 'Inter')),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true), 
+            child: const Text('Delete', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        if (type == 'reminder') {
+          await ReminderRepository().deleteReminder(id);
+        } else {
+          await AssignmentRepository().deleteAssignment(id);
+        }
+        ref.invalidate(teacherDashboardProvider);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('✅ Post deleted successfully'), backgroundColor: AppColors.success));
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error));
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -194,7 +232,7 @@ class _TeacherDashboardContentState extends State<_TeacherDashboardContent> {
                     physics: const NeverScrollableScrollPhysics(),
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
-                    childAspectRatio: isMobile ? 1.4 : 1.8,
+                    childAspectRatio: isMobile ? 1.2 : 1.6,
                     children: [
                       _StatCard(value: '${stats['totalReminders'] ?? 0}', label: 'Notices', icon: Icons.send_rounded, color: const Color(0xFF00897B)),
                       _StatCard(value: '${allAssignments.length}', label: 'Assignments', icon: Icons.assignment_rounded, color: AppColors.primary),
@@ -212,7 +250,7 @@ class _TeacherDashboardContentState extends State<_TeacherDashboardContent> {
                     physics: const NeverScrollableScrollPhysics(),
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
-                    childAspectRatio: isMobile ? 2.2 : 3.5,
+                    childAspectRatio: isMobile ? 1.8 : 3.0,
                     children: [
                       _QuickAction(icon: Icons.notifications_active_rounded, label: 'New Notice', color: AppColors.primary, onTap: () => context.go('/teacher-create')),
                       _QuickAction(icon: Icons.assignment_add, label: 'New Task', color: AppColors.accent, onTap: () => context.go('/teacher-create/assignment')),
@@ -297,42 +335,88 @@ class _TeacherDashboardContentState extends State<_TeacherDashboardContent> {
                     ),
                   ),
 
-                // ─── Assignments ──────────────────────────────────────────────
+                // ─── Content Management ──────────────────────────────────────────────
                 _SectionHeader(
-                  title: 'Active Assignments', 
-                  onSearch: () => setState(() => _isSearchingAssignments = !_isSearchingAssignments),
+                  title: '🗂️ Manage Your Posts',
+                  onSearch: () => setState(() => _isSearchingHistory = !_isSearchingHistory),
                 ),
-                if (_isSearchingAssignments)
+                if (_isSearchingHistory)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: TextField(
-                      onChanged: (v) => setState(() => _assignmentSearch = v),
+                      onChanged: (v) => setState(() => _historySearch = v),
                       decoration: InputDecoration(
-                        hintText: 'Search assignments...',
+                        hintText: 'Search history...',
                         prefixIcon: const Icon(Icons.search, size: 18),
                         isDense: true,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                       ),
                     ),
                   ),
-                if (assignments.isEmpty)
-                  const EmptyStateWidget(icon: Icons.event_available, message: 'No assignments found')
-                else
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: isMobile ? 1 : 2,
-                      childAspectRatio: isMobile ? 4.5 : 5.0,
-                      mainAxisSpacing: 0,
-                      crossAxisSpacing: 12,
-                    ),
-                    itemCount: assignments.length,
-                    itemBuilder: (ctx, i) => _DeadlineRow(
-                      assignment: assignments[i], 
-                      onTap: () => context.push('/teacher-assignment/${assignments[i].id}'),
-                    ),
-                  ),
+                
+                // Combine and filter for the dashboard view
+                () {
+                  final List<dynamic> history = [...allReminders, ...allAssignments];
+                  final filteredHistory = history.where((item) {
+                    if (item == null) return false;
+                    final String title = item is ReminderModel ? item.title : (item is AssignmentModel ? item.title : '');
+                    return title.toLowerCase().contains(_historySearch.toLowerCase());
+                  }).toList();
+
+                  if (history.isEmpty) {
+                    return const EmptyStateWidget(icon: Icons.inventory_2_outlined, message: 'No posts yet');
+                  }
+
+                  if (filteredHistory.isEmpty && _historySearch.isNotEmpty) {
+                    return const Padding(padding: EdgeInsets.all(32), child: Center(child: Text('No matching posts found')));
+                  }
+
+                  return Column(
+                    children: [
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: filteredHistory.length.clamp(0, 5),
+                        itemBuilder: (ctx, i) {
+                          final item = filteredHistory[i];
+                          if (item is ReminderModel) {
+                            return _ManagementRow(
+                              title: item.title,
+                              subtitle: 'Notice • ${DateFormat('d MMM').format(item.createdAt)}',
+                              icon: Icons.campaign_rounded,
+                              color: AppColors.primary,
+                              onView: () => context.push('/teacher-receipts/${item.id}'),
+                              onEdit: () => context.push('/teacher-edit-reminder/${item.id}'),
+                              onDelete: () => _confirmDelete(context, 'reminder', item.id),
+                            );
+                          } else {
+                            final a = item as AssignmentModel;
+                            return _ManagementRow(
+                              title: a.title,
+                              subtitle: 'Assignment • Due ${DateFormat('d MMM').format(a.dueDate)}',
+                              icon: Icons.assignment_rounded,
+                              color: AppColors.accent,
+                              onView: () => context.push('/teacher-assignment/${a.id}'),
+                              onEdit: () => context.push('/teacher-edit-assignment/${a.id}'),
+                              onDelete: () => _confirmDelete(context, 'assignment', a.id),
+                            );
+                          }
+                        },
+                      ),
+                      if (filteredHistory.length > 5)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: TextButton(
+                              onPressed: () => context.push('/teacher-manage-all'),
+                              child: const Text('See More Posts', style: TextStyle(fontWeight: FontWeight.w700, fontFamily: 'Inter')),
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                }(),
 
                 const SizedBox(height: 80),
               ]),
@@ -375,6 +459,7 @@ class _StatCard extends StatelessWidget {
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
           padding: const EdgeInsets.all(8),
@@ -382,8 +467,15 @@ class _StatCard extends StatelessWidget {
           child: Icon(icon, color: color, size: 20),
         ),
         const SizedBox(height: 12),
-        Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: color, fontFamily: 'Inter', letterSpacing: -0.5)),
-        Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B), fontFamily: 'Inter', fontWeight: FontWeight.w600, letterSpacing: 0.2)),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: color, fontFamily: 'Inter', letterSpacing: -0.5)),
+        ),
+        const SizedBox(height: 2),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(label, style: const TextStyle(fontSize: 10, color: Color(0xFF64748B), fontFamily: 'Inter', fontWeight: FontWeight.w600, letterSpacing: 0.2)),
+        ),
       ],
     ),
   );
@@ -452,6 +544,79 @@ class _SectionHeader extends StatelessWidget {
       ),
     ]),
   );
+}
+
+class _ManagementRow extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onView;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _ManagementRow({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+    required this.onView,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.black.withOpacity(0.05)),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4))],
+        ),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          leading: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, fontFamily: 'Inter'), maxLines: 1, overflow: TextOverflow.ellipsis),
+          subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textHint, fontFamily: 'Inter')),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.visibility_outlined, size: 18, color: AppColors.primary),
+                onPressed: onView,
+                tooltip: 'View',
+                visualDensity: VisualDensity.compact,
+                constraints: const BoxConstraints(),
+              ),
+              const SizedBox(width: 4),
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.accent),
+                onPressed: onEdit,
+                tooltip: 'Edit',
+                visualDensity: VisualDensity.compact,
+                constraints: const BoxConstraints(),
+              ),
+              const SizedBox(width: 4),
+              IconButton(
+                icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error),
+                onPressed: onDelete,
+                tooltip: 'Delete',
+                visualDensity: VisualDensity.compact,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _ReminderRow extends StatelessWidget {

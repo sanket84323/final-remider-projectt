@@ -18,8 +18,13 @@ final _departmentsProvider = FutureProvider<List<dynamic>>((ref) async {
   return ref.watch(adminRepositoryProvider).getDepartments();
 });
 
+final _userStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+  final response = await ApiService().get('/analytics/user-stats');
+  return response.data['data'];
+});
+
 final _classesProvider = FutureProvider<List<String>>((ref) async {
-  final response = await ApiService().get('/departments/69ed0cdf876ade57f7981861/classes');
+  final response = await ApiService().get('/departments/69ed6632b8a6312aac7c38e8/classes');
   return List<String>.from(response.data['data']);
 });
 
@@ -53,6 +58,22 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
       ),
       body: Column(
         children: [
+          // ─── Summary Section ───────────────────────────────────────────
+          Consumer(builder: (ctx, ref, _) {
+            final statsAsync = ref.watch(_userStatsProvider);
+            return statsAsync.when(
+              data: (stats) => Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: Row(children: [
+                  Expanded(child: _StatCard(label: 'Total Students', count: stats['totalStudents'].toString(), color: AppColors.primary, icon: Icons.school_rounded)),
+                  const SizedBox(width: 12),
+                  Expanded(child: _StatCard(label: 'Total Teachers', count: stats['totalTeachers'].toString(), color: const Color(0xFF00897B), icon: Icons.person_rounded)),
+                ]),
+              ),
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+            );
+          }),
           // ─── Search & Filter ───────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.all(AppDimens.paddingMd),
@@ -125,7 +146,13 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           color: AppColors.divider.withOpacity(0.3),
-                          child: Text('CLASS: $className', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 1.2)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('CLASS: $className', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textSecondary, letterSpacing: 1.2)),
+                              Text('${classUsers.length} Students', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                            ],
+                          ),
                         ),
                         ...classUsers.map((user) => InkWell(
                           onTap: () => context.push('/admin-student-analytics/${user['_id']}'),
@@ -231,7 +258,7 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
                     'email': emailCtrl.text.trim(),
                     'password': passCtrl.text,
                     'role': role,
-                    'department': '69ed0cdf876ade57f7981861', // AIDS Dept ID
+                    'department': '69ed6632b8a6312aac7c38e8', // AIDS Dept ID
                     if (role == 'student') ...{
                       'className': selectedClass ?? '',
                       'rollNumber': rollCtrl.text,
@@ -324,4 +351,35 @@ class _RoleChip extends StatelessWidget {
       child: Text(role, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: color, fontFamily: 'Inter')),
     );
   }
+}
+
+class _StatCard extends StatelessWidget {
+  final String label;
+  final String count;
+  final Color color;
+  final IconData icon;
+  const _StatCard({required this.label, required this.count, required this.color, required this.icon});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+      border: Border.all(color: color.withOpacity(0.1)),
+    ),
+    child: Row(children: [
+      Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+        child: Icon(icon, color: color, size: 20),
+      ),
+      const SizedBox(width: 12),
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(count, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF1A237E), fontFamily: 'Inter')),
+        Text(label.toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w800, color: Colors.black26, letterSpacing: 0.5)),
+      ])),
+    ]),
+  );
 }

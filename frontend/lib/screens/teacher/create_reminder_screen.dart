@@ -7,7 +7,8 @@ import '../../data/repositories/repositories.dart';
 import '../../providers/app_providers.dart';
 
 class CreateReminderScreen extends ConsumerStatefulWidget {
-  const CreateReminderScreen({super.key});
+  final String? reminderId;
+  const CreateReminderScreen({super.key, this.reminderId});
 
   @override
   ConsumerState<CreateReminderScreen> createState() => _CreateReminderScreenState();
@@ -29,6 +30,37 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
   bool _isPinned = false;
   bool _isLoading = false;
 
+  @override
+  void initState() {
+    super.initState();
+    if (widget.reminderId != null) {
+      _loadReminder();
+    }
+  }
+
+  Future<void> _loadReminder() async {
+    setState(() => _isLoading = true);
+    try {
+      final repo = ReminderRepository();
+      final reminder = await repo.getReminderById(widget.reminderId!);
+      setState(() {
+        _titleCtrl.text = reminder.title;
+        _descCtrl.text = reminder.description;
+        _priority = reminder.priority;
+        _category = reminder.category;
+        _audienceType = reminder.targetAudience['type'] ?? 'all';
+        _selectedClassDropdown = reminder.targetAudience['className'];
+        _scheduledAt = reminder.scheduledAt;
+        _deadlineAt = reminder.deadlineAt;
+        _isPinned = reminder.isPinned;
+      });
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error loading reminder: $e')));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   final _priorities = ['normal', 'important', 'urgent'];
   final _categories = ['reminder', 'announcement', 'notice', 'event', 'exam', 'timetable'];
   final _audienceTypes = ['all', 'class', 'department'];
@@ -46,7 +78,7 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
 
     try {
       final repo = ReminderRepository();
-      await repo.createReminder({
+      final data = {
         'title': _titleCtrl.text.trim(),
         'description': _descCtrl.text.trim(),
         'priority': _priority,
@@ -59,14 +91,25 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
         if (_scheduledAt != null) 'scheduledAt': _scheduledAt!.toIso8601String(),
         if (_deadlineAt != null) 'deadlineAt': _deadlineAt!.toIso8601String(),
         'isPinned': _isPinned,
-      });
+      };
+
+      if (widget.reminderId != null) {
+        await repo.updateReminder(widget.reminderId!, data);
+      } else {
+        await repo.createReminder(data);
+      }
 
       ref.invalidate(teacherDashboardProvider);
       ref.invalidate(reminderListProvider);
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(_scheduledAt != null ? '⏰ Reminder scheduled!' : '✅ Reminder sent!'), backgroundColor: AppColors.success),
+            SnackBar(
+              content: Text(widget.reminderId != null 
+                ? '✅ Reminder updated!' 
+                : (_scheduledAt != null ? '⏰ Reminder scheduled!' : '✅ Reminder sent!')), 
+              backgroundColor: AppColors.success
+            ),
           );
           context.go('/teacher');
         }
@@ -88,15 +131,19 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isEdit = widget.reminderId != null;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Reminder'),
+        title: Text(isEdit ? 'Edit Reminder' : 'Create Reminder'),
         leading: IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => context.pop()),
         actions: [
           if (_isLoading)
             const Padding(padding: EdgeInsets.all(14), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)))
           else
-            TextButton(onPressed: _submit, child: const Text('Send', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
+            TextButton(
+              onPressed: _submit, 
+              child: Text(isEdit ? 'Update' : 'Send', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16))
+            ),
         ],
       ),
       body: Form(

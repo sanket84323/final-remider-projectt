@@ -38,10 +38,10 @@ class _ScheduledRemindersScreenState extends ConsumerState<ScheduledRemindersScr
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notice Management'),
-        leading: IconButton(
+        leading: (context.canPop() == true) ? IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
-        ),
+        ) : null,
         bottom: TabBar(
           controller: _tabController,
           tabs: const [

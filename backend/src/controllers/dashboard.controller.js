@@ -51,9 +51,17 @@ const getStudentDashboard = async (req, res) => {
     const latestReminders = await attachNotifId(latestRemindersRaw);
     const pinnedReminders = await attachNotifId(pinnedRemindersRaw);
 
-    const pendingAssignments = await Assignment.countDocuments({
+    const allAssignmentsForStudent = await Assignment.find(assignmentFilter);
+    const pendingApprovalCount = allAssignmentsForStudent.filter(a => 
+      a.completedBy.some(c => c.userId?.toString() === user._id.toString() && c.status === 'pending')
+    ).length;
+    
+    const completedCount = allAssignmentsForStudent.filter(a => 
+      a.completedBy.some(c => c.userId?.toString() === user._id.toString() && c.status === 'completed')
+    ).length;
+
+    const todoCount = await Assignment.countDocuments({
       ...assignmentFilter,
-      dueDate: { $gte: now },
       'completedBy.userId': { $ne: user._id },
     });
 
@@ -61,7 +69,12 @@ const getStudentDashboard = async (req, res) => {
       latestReminders,
       upcomingAssignments,
       pinnedReminders,
-      stats: { unreadNotifications: unreadCount, pendingAssignments },
+      stats: { 
+        unreadNotifications: unreadCount, 
+        pendingAssignments: todoCount,
+        pendingApprovalCount,
+        completedCount
+      },
     }, 'Student dashboard loaded');
   } catch (error) {
     return errorResponse(res, error.message, 500);
@@ -93,21 +106,35 @@ const getTeacherDashboard = async (req, res) => {
 
 const getAdminDashboard = async (req, res) => {
   try {
+    const { department } = req.user;
+    const filter = department ? { department } : {};
+    const reminderFilter = department ? { 'targetAudience.department': department } : {};
+
     const [totalUsers, totalStudents, totalTeachers, totalReminders, totalAssignments, recentActivity] = await Promise.all([
-      User.countDocuments({ isActive: true }),
-      User.countDocuments({ role: 'student', isActive: true }),
-      User.countDocuments({ role: 'teacher', isActive: true }),
-      Reminder.countDocuments({ status: 'sent' }),
+      User.countDocuments({ ...filter, isActive: true }),
+      User.countDocuments({ ...filter, role: 'student', isActive: true }),
+      User.countDocuments({ ...filter, role: 'teacher', isActive: true }),
+      Reminder.countDocuments({ status: 'sent', ...reminderFilter }),
       Assignment.countDocuments({ isActive: true }),
       ActivityLog.find().populate('userId', 'name role').sort({ createdAt: -1 }).limit(10),
     ]);
 
-    const totalNotifications = await Notification.countDocuments();
-    const readNotifications = await Notification.countDocuments({ readStatus: true });
+    // Calculate Engagement (Read Rate) specifically for this department
+    const studentsInDept = await User.find({ ...filter, role: 'student' }).select('_id');
+    const studentIds = studentsInDept.map(s => s._id);
+
+    const totalNotifications = await Notification.countDocuments({ userId: { $in: studentIds } });
+    const readNotifications = await Notification.countDocuments({ userId: { $in: studentIds }, readStatus: true });
+
+    console.log(`[Dashboard] Loading for user: ${req.user.email}, Role: ${req.user.role}, Dept: ${department}`);
+    console.log(`[Dashboard] Engagement: Total Notifs: ${totalNotifications}, Read Notifs: ${readNotifications}`);
+
+    const readRate = totalNotifications > 0 ? Math.round((readNotifications / totalNotifications) * 100) : 0;
+    console.log(`[Dashboard] Final Read Rate: ${readRate}%`);
 
     return successResponse(res, {
       stats: { totalUsers, totalStudents, totalTeachers, totalReminders, totalAssignments, totalNotifications },
-      readRate: totalNotifications > 0 ? ((readNotifications / totalNotifications) * 100).toFixed(1) : 0,
+      readRate,
       recentActivity,
     }, 'Admin dashboard loaded');
   } catch (error) {

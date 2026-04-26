@@ -49,11 +49,6 @@ const limiter = rateLimit({
   message: { success: false, message: 'Too many requests, please try again later.' },
 });
 
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  message: { success: false, message: 'Too many login attempts, please try again after 15 minutes.' },
-});
 
 app.use('/api', limiter);
 
@@ -77,7 +72,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // ─── API Routes ────────────────────────────────────────────────────────────────
-app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/reminders', reminderRoutes);
 app.use('/api/assignments', assignmentRoutes);

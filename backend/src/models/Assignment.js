@@ -57,7 +57,8 @@ const assignmentSchema = new mongoose.Schema(
         default: 'class',
       },
       department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
-      className: String,
+      classNames: [String],
+      className: String, // Keep for single class backward compatibility
       section: String,
     },
     attachments: [attachmentSchema],

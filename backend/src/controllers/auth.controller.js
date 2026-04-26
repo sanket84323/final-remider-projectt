@@ -194,4 +194,22 @@ const register = async (req, res) => {
   }
 };
 
-module.exports = { login, refreshToken, logout, forgotPassword, register };
+const getDemoCredentials = async (req, res) => {
+  try {
+    const [admin, teacher, student] = await Promise.all([
+      User.findOne({ role: 'admin' }).select('email'),
+      User.findOne({ role: 'teacher' }).select('email'),
+      User.findOne({ role: 'student' }).select('email'),
+    ]);
+
+    return successResponse(res, {
+      admin: { email: admin?.email || 'hod@aids.edu', password: 'Hod@123' },
+      teacher: { email: teacher?.email || 'amit@aids.edu', password: 'Teacher@123' },
+      student: { email: student?.email || 'sanket@student.edu', password: 'Student@123' },
+    }, 'Demo credentials retrieved');
+  } catch (error) {
+    return errorResponse(res, error.message, 500);
+  }
+};
+
+module.exports = { login, refreshToken, logout, forgotPassword, register, getDemoCredentials };

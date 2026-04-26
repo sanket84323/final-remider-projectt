@@ -20,10 +20,20 @@ class StudentDetailScreen extends ConsumerWidget {
     final analyticsAsync = ref.watch(_studentAnalyticsProvider(studentId));
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F2F5),
+      backgroundColor: const Color(0xFFF8F9FE),
       body: analyticsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Scaffold(appBar: AppBar(), body: Center(child: Text('Error: $e'))),
+        error: (e, _) => Scaffold(
+          appBar: AppBar(elevation: 0, backgroundColor: Colors.transparent, leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.black), onPressed: () => context.pop())),
+          body: Center(child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 64),
+              const SizedBox(height: 16),
+              Text('Error: $e', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600)),
+            ],
+          )),
+        ),
         data: (data) {
           final student = data['student'];
           final stats = data['stats'];
@@ -36,12 +46,21 @@ class StudentDetailScreen extends ConsumerWidget {
           return CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
-              // ─── Premium Animated Header ───────────────────────────────
+              // ─── Premium Glassmorphic Header ───────────────────────────
               SliverAppBar(
                 expandedHeight: 280,
                 pinned: true,
                 stretch: true,
                 backgroundColor: const Color(0xFF0D47A1),
+                elevation: 0,
+                leading: IconButton(
+                  icon: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
+                    child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 20),
+                  ),
+                  onPressed: () => context.pop(),
+                ),
                 flexibleSpace: FlexibleSpaceBar(
                   stretchModes: const [StretchMode.zoomBackground, StretchMode.blurBackground],
                   background: Stack(
@@ -52,71 +71,81 @@ class StudentDetailScreen extends ConsumerWidget {
                           gradient: LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
-                            colors: [Color(0xFF0D47A1), Color(0xFF1976D2), Color(0xFF42A5F5)],
+                            colors: [Color(0xFF0D47A1), Color(0xFF1565C0), Color(0xFF1E88E5)],
                           ),
                         ),
                       ),
-                      Positioned(
-                        bottom: 0, left: 0, right: 0, height: 100,
-                        child: ClipRect(
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                            child: Container(color: Colors.white.withOpacity(0.1)),
-                          ),
-                        ),
-                      ),
+                      Positioned(top: -50, right: -50, child: CircleAvatar(radius: 120, backgroundColor: Colors.white.withOpacity(0.05))),
+                      Positioned(bottom: -30, left: -20, child: CircleAvatar(radius: 80, backgroundColor: Colors.white.withOpacity(0.03))),
                       SafeArea(
-                        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                          Hero(
-                            tag: 'avatar_${student['_id']}',
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                              child: CircleAvatar(
-                                radius: 45,
-                                backgroundImage: NetworkImage('https://ui-avatars.com/api/?name=${Uri.encodeComponent(student['name'] ?? '')}&background=1565C0&color=fff&size=128'),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Hero(
+                              tag: 'avatar_${student['_id']}',
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
+                                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 20, offset: const Offset(0, 10))],
+                                ),
+                                child: CircleAvatar(
+                                  radius: 45,
+                                  backgroundColor: Colors.white,
+                                  backgroundImage: NetworkImage('https://ui-avatars.com/api/?name=${Uri.encodeComponent(student['name'] ?? '')}&background=1565C0&color=fff&size=256'),
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(student['name'] ?? '', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, fontFamily: 'Inter', letterSpacing: -0.5)),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                            decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(20)),
-                            child: Text(
-                              '${student['className']} • ROLL: ${student['rollNumber'] ?? 'N/A'}',
-                              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600, fontFamily: 'Inter'),
+                            const SizedBox(height: 12),
+                            Text(student['name'] ?? '', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, fontFamily: 'Inter', letterSpacing: -0.5)),
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                              decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.white.withOpacity(0.1))),
+                              child: Text(student['email'] ?? '', style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 12, fontWeight: FontWeight.w500, fontFamily: 'Inter')),
                             ),
-                          ),
-                        ]),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
 
-              // ─── Scoreboard ─────────────────────────────────────────────
+              // ─── Scoreboard Highlights ──────────────────────────────────
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
                   child: Row(children: [
-                    Expanded(child: _CircularScoreCard(title: 'Engagement', score: readRate, color: const Color(0xFF7B1FA2), icon: Icons.bolt_rounded)),
+                    Expanded(child: _ScoreCard(title: 'Engagement', score: readRate, icon: Icons.bolt_rounded, color: const Color(0xFF673AB7))),
                     const SizedBox(width: 16),
-                    Expanded(child: _CircularScoreCard(title: 'Submissions', score: submissionRate, color: const Color(0xFF00897B), icon: Icons.auto_awesome_rounded)),
+                    Expanded(child: _ScoreCard(title: 'Consistency', score: submissionRate, icon: Icons.auto_awesome_rounded, color: const Color(0xFF00BFA5))),
                   ]),
                 ),
               ),
 
-              // ─── Stats Grid ──────────────────────────────────────────────
+              // ─── Detailed Info Grid ──────────────────────────────────────
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                sliver: SliverGrid.count(
-                  crossAxisCount: 2, mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: 2.5,
-                  children: [
-                    _CompactStat(label: 'Reminders Read', value: '${stats['readNotifications']}', icon: Icons.done_all_rounded, color: Colors.blueGrey),
-                    _CompactStat(label: 'Pending Tasks', value: '${stats['pending']}', icon: Icons.pending_actions_rounded, color: Colors.orange),
-                  ],
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverToBoxAdapter(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    const Text('Student Identity', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, fontFamily: 'Inter', color: AppColors.textPrimary)),
+                    const SizedBox(height: 16),
+                    Row(children: [
+                      Expanded(child: _InfoTile(label: 'CLASS', value: student['className'] ?? 'N/A', icon: Icons.class_rounded, color: Colors.blue)),
+                      const SizedBox(width: 12),
+                      Expanded(child: _InfoTile(label: 'ROLL NO', value: student['rollNumber'] ?? 'N/A', icon: Icons.badge_rounded, color: Colors.orange)),
+                    ]),
+                    const SizedBox(height: 12),
+                    _InfoTile(
+                      label: 'DEPARTMENT', 
+                      value: student['department']?['name'] ?? 'General', 
+                      icon: Icons.account_balance_rounded, 
+                      color: Colors.purple,
+                      fullWidth: true,
+                    ),
+                  ]),
                 ),
               ),
 
@@ -125,120 +154,122 @@ class StudentDetailScreen extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 32, 20, 16),
                   child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    const Text('Learning Journey', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, fontFamily: 'Inter', color: AppColors.textPrimary)),
+                    Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      const Text('Learning Journey', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, fontFamily: 'Inter', color: AppColors.textPrimary)),
+                      Text('Assignments & Submissions', style: TextStyle(fontSize: 12, color: Colors.black.withOpacity(0.4), fontWeight: FontWeight.w500)),
+                    ]),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                      child: Text('${assignments.length} Total', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                      child: Text('${assignments.length} Total', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.primary)),
                     ),
                   ]),
                 ),
               ),
 
-              // ─── Assignment List ─────────────────────────────────────────
+              // ─── Modern Assignment List ──────────────────────────────────
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final a = assignments[index];
-                      final status = a['status'] as String;
-                      final dueDate = DateTime.parse(a['dueDate']);
-                      
-                      Color statusColor;
-                      IconData statusIcon;
-                      String statusLabel;
-                      if (status == 'approved') { 
-                        statusColor = AppColors.success; 
-                        statusIcon = Icons.check_circle_rounded;
-                        statusLabel = 'SUBMITTED';
-                      } else if (status == 'submitted') { 
-                        statusColor = Colors.amber.shade700; 
-                        statusIcon = Icons.stars_rounded;
-                        statusLabel = 'UNDER REVIEW';
-                      } else { 
-                        statusColor = AppColors.error; 
-                        statusIcon = Icons.info_outline_rounded;
-                        statusLabel = 'PENDING';
-                      }
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: assignments.isEmpty 
+                  ? const SliverToBoxAdapter(child: Center(child: Padding(padding: EdgeInsets.all(40), child: Text('No assignments tracked yet', style: TextStyle(color: AppColors.textHint)))))
+                  : SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final a = assignments[index];
+                          final status = a['status'] as String;
+                          final dueDate = DateTime.parse(a['dueDate']);
+                          
+                          Color statusColor;
+                          String statusLabel;
+                          if (status == 'approved') { 
+                            statusColor = const Color(0xFF00C853); 
+                            statusLabel = 'APPROVED';
+                          } else if (status == 'submitted') { 
+                            statusColor = const Color(0xFFFFAB00); 
+                            statusLabel = 'PENDING REVIEW';
+                          } else { 
+                            statusColor = const Color(0xFFFF1744); 
+                            statusLabel = 'MISSING';
+                          }
 
-                      return InkWell(
-                        onTap: () => context.push('/assignment-detail/${a['_id']}'),
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-                            child: IntrinsicHeight(
-                              child: Row(children: [
-                                Container(width: 6, color: statusColor),
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Row(children: [
-                                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                        Text(a['title'] ?? '', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, fontFamily: 'Inter')),
-                                        const SizedBox(height: 6),
-                                        Row(children: [
-                                          const Icon(Icons.calendar_today_rounded, size: 12, color: AppColors.textHint),
-                                          const SizedBox(width: 4),
-                                          Text(DateFormat('MMM d, h:mm a').format(dueDate), style: const TextStyle(fontSize: 11, color: AppColors.textHint, fontFamily: 'Inter')),
-                                        ]),
-                                      ])),
-                                      Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                                        Icon(statusIcon, color: statusColor, size: 20),
-                                        const SizedBox(height: 4),
-                                        Text(statusLabel, style: TextStyle(color: statusColor, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
-                                      ]),
-                                    ]),
-                                  ),
-                                ),
-                              ]),
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 5))],
+                              border: Border.all(color: Colors.black.withOpacity(0.02)),
                             ),
-                          ),
-                        ),
-                      );
-                    },
-                    childCount: assignments.length,
-                  ),
-                ),
+                            child: Row(children: [
+                              Container(
+                                width: 45, height: 45,
+                                decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(14)),
+                                child: Icon(status == 'approved' ? Icons.task_alt_rounded : status == 'submitted' ? Icons.history_edu_rounded : Icons.warning_amber_rounded, color: statusColor, size: 24),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                  Text(a['title'] ?? 'Assignment', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: Color(0xFF2D3436))),
+                                  const SizedBox(height: 4),
+                                  Row(children: [
+                                    Icon(Icons.person_outline_rounded, size: 12, color: Colors.black.withOpacity(0.4)),
+                                    const SizedBox(width: 4),
+                                    Text(a['teacher'] ?? 'Unknown Teacher', style: TextStyle(fontSize: 11, color: Colors.black.withOpacity(0.4), fontWeight: FontWeight.w500)),
+                                  ]),
+                                ]),
+                              ),
+                              Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                                Text(statusLabel, style: TextStyle(color: statusColor, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                                const SizedBox(height: 4),
+                                Text(DateFormat('MMM d').format(dueDate), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF636E72))),
+                              ]),
+                            ]),
+                          );
+                        },
+                        childCount: assignments.length,
+                      ),
+                    ),
               ),
 
               // ─── Intelligence Card ──────────────────────────────────────
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   child: Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(colors: [Color(0xFF1A237E), Color(0xFF0D47A1)]),
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [BoxShadow(color: const Color(0xFF0D47A1).withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10))],
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF1A237E), Color(0xFF311B92)],
+                      ),
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [BoxShadow(color: const Color(0xFF1A237E).withOpacity(0.3), blurRadius: 25, offset: const Offset(0, 10))],
                     ),
                     child: Column(children: [
-                      const Icon(Icons.auto_graph_rounded, color: Colors.white, size: 32),
-                      const SizedBox(height: 16),
-                      const Text('Performance Intelligence', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 0.5)),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Based on recent activity, this student is ${submissionRate >= 80 ? 'EXCELLING' : submissionRate >= 50 ? 'STABLE' : 'AT RISK'} in their academic submissions.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13, height: 1.5, fontFamily: 'Inter'),
-                      ),
+                      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                        const Icon(Icons.psychology_rounded, color: Colors.white, size: 30),
+                        const SizedBox(width: 12),
+                        const Text('AI Insights', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 0.5)),
+                      ]),
                       const SizedBox(height: 20),
+                      Text(
+                        'This student maintains a ${submissionRate}% completion rate. Their current status is ${submissionRate >= 80 ? 'EXEMPLARY' : submissionRate >= 50 ? 'SATISFACTORY' : 'REQUIRES INTERVENTION'}.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 13, height: 1.6, fontWeight: FontWeight.w400, fontFamily: 'Inter'),
+                      ),
+                      const SizedBox(height: 24),
                       Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-                        _MinimalIndicator(label: 'Engagement', value: '$readRate%', color: Colors.purpleAccent),
-                        _MinimalIndicator(label: 'Completion', value: '$submissionRate%', color: Colors.greenAccent),
+                        _StatBox(label: 'Alerts Seen', value: '${stats['readNotifications']}', color: Colors.cyanAccent),
+                        _StatBox(label: 'Success Rate', value: '$submissionRate%', color: Colors.greenAccent),
+                        _StatBox(label: 'Pending', value: '${stats['pending']}', color: Colors.orangeAccent),
                       ]),
                     ]),
                   ),
                 ),
               ),
-              const SliverToBoxAdapter(child: SizedBox(height: 60)),
+              const SliverToBoxAdapter(child: SizedBox(height: 50)),
             ],
           );
         },
@@ -247,66 +278,93 @@ class StudentDetailScreen extends ConsumerWidget {
   }
 }
 
-class _CircularScoreCard extends StatelessWidget {
+class _ScoreCard extends StatelessWidget {
   final String title;
   final int score;
-  final Color color;
   final IconData icon;
-  const _CircularScoreCard({required this.title, required this.score, required this.color, required this.icon});
+  final Color color;
+  const _ScoreCard({required this.title, required this.score, required this.icon, required this.color});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), boxShadow: [BoxShadow(color: color.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 8))]),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [BoxShadow(color: color.withOpacity(0.12), blurRadius: 20, offset: const Offset(0, 8))],
+      ),
       child: Column(children: [
         Stack(alignment: Alignment.center, children: [
-          SizedBox(width: 70, height: 70, child: CircularProgressIndicator(value: score / 100, strokeWidth: 8, backgroundColor: color.withOpacity(0.1), valueColor: AlwaysStoppedAnimation<Color>(color))),
-          Icon(icon, color: color, size: 28),
+          SizedBox(
+            width: 75, height: 75,
+            child: CircularProgressIndicator(
+              value: score / 100, 
+              strokeWidth: 8, 
+              backgroundColor: color.withOpacity(0.08), 
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+              strokeCap: StrokeCap.round,
+            ),
+          ),
+          Icon(icon, color: color, size: 30),
         ]),
         const SizedBox(height: 16),
-        Text('$score%', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: color, fontFamily: 'Inter')),
-        Text(title, style: const TextStyle(fontSize: 11, color: AppColors.textHint, fontWeight: FontWeight.w600, fontFamily: 'Inter')),
+        Text('$score%', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: color, fontFamily: 'Inter')),
+        Text(title, style: TextStyle(fontSize: 10, color: Colors.black.withOpacity(0.4), fontWeight: FontWeight.w800, letterSpacing: 0.5)),
       ]),
     );
   }
 }
 
-class _CompactStat extends StatelessWidget {
+class _InfoTile extends StatelessWidget {
   final String label;
   final String value;
   final IconData icon;
   final Color color;
-  const _CompactStat({required this.label, required this.value, required this.icon, required this.color});
+  final bool fullWidth;
+  const _InfoTile({required this.label, required this.value, required this.icon, required this.color, this.fullWidth = false});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+      width: fullWidth ? double.infinity : null,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.black.withOpacity(0.03)),
+      ),
       child: Row(children: [
-        Icon(icon, color: color, size: 18),
-        const SizedBox(width: 12),
-        Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
-          Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, fontFamily: 'Inter')),
-          Text(label, style: const TextStyle(fontSize: 9, color: AppColors.textHint, fontWeight: FontWeight.bold, fontFamily: 'Inter')),
-        ]),
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(14)),
+          child: Icon(icon, color: color, size: 20),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(label, style: TextStyle(fontSize: 9, color: Colors.black.withOpacity(0.4), fontWeight: FontWeight.w900, letterSpacing: 1.0)),
+            const SizedBox(height: 2),
+            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF2D3436))),
+          ]),
+        ),
       ]),
     );
   }
 }
 
-class _MinimalIndicator extends StatelessWidget {
+class _StatBox extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
-  const _MinimalIndicator({required this.label, required this.value, required this.color});
+  const _StatBox({required this.label, required this.value, required this.color});
 
   @override
   Widget build(BuildContext context) {
     return Column(children: [
-      Text(value, style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.w900, fontFamily: 'Inter')),
-      Text(label, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 9, fontWeight: FontWeight.bold, fontFamily: 'Inter')),
+      Text(value, style: TextStyle(color: color, fontSize: 20, fontWeight: FontWeight.w900, fontFamily: 'Inter')),
+      const SizedBox(height: 4),
+      Text(label, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
     ]);
   }
 }

@@ -10,7 +10,7 @@ final _classStudentsProvider = FutureProvider.family<List<dynamic>, String>((ref
 });
 
 final _allClassesProvider = FutureProvider<List<String>>((ref) async {
-  final response = await ApiService().get('/departments/69ed0cdf876ade57f7981861/classes');
+  final response = await ApiService().get('/departments/69ed6632b8a6312aac7c38e8/classes');
   return List<String>.from(response.data['data']);
 });
 

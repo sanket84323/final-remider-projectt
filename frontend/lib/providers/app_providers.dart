@@ -75,10 +75,11 @@ class AssignmentListNotifier extends StateNotifier<AsyncValue<List<AssignmentMod
     await _repo.markComplete(id);
     final current = state.valueOrNull ?? [];
     state = AsyncValue.data(
-      current.map((a) => a.id == id
+      current.map<AssignmentModel>((a) => a.id == id
           ? AssignmentModel(
               id: a.id, title: a.title, description: a.description, 
-              dueDate: a.dueDate, isCompleted: false, isPending: true, 
+              dueDate: a.dueDate, targetAudience: a.targetAudience,
+              isCompleted: true, isPending: false, 
               isOverdue: a.isOverdue, subject: a.subject, createdAt: a.createdAt
             )
           : a).toList(),

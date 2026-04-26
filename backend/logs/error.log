@@ -112,3 +112,37 @@ SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 
 [2026-04-26 05:47:39] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
 [2026-04-26 05:52:34] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
 [2026-04-26 05:52:41] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 07:11:18] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 07:11:46] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 07:11:52] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 10:42:54] [31merror[39m: Scheduler error (scheduled reminders): getaddrinfo ENOTFOUND ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 10:42:54] [31merror[39m: Scheduler error (deadline reminders): getaddrinfo ENOTFOUND ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 12:05:09] [31merror[39m: Scheduler error (scheduled reminders): getaddrinfo ENOTFOUND ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 12:29:21] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 12:29:39] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 12:31:09] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 12:33:54] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 12:34:09] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 12:34:21] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 12:34:32] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 12:43:49] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 12:46:59] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 12:47:06] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 12:56:59] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 13:10:35] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 13:48:49] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 13:49:06] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 13:58:06] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 13:58:23] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 14:22:18] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 14:22:31] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 14:27:23] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 14:33:36] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 14:37:37] [31merror[39m: Scheduler error (scheduled reminders): getaddrinfo ENOTFOUND ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 14:38:30] [31merror[39m: Scheduler error (scheduled reminders): getaddrinfo ENOTFOUND ac-r9dzahj-shard-00-00.tor22fh.mongodb.net
+[2026-04-26 14:39:53] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 14:40:07] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 14:40:41] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 14:44:44] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 14:45:01] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.
+[2026-04-26 14:45:08] [31merror[39m: Firebase initialization failed: Failed to parse private key: Error: Invalid PEM formatted message.

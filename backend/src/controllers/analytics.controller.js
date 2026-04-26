@@ -2,6 +2,7 @@
  * Analytics Controller (Admin)
  */
 
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const Reminder = require('../models/Reminder');
 const Assignment = require('../models/Assignment');
@@ -11,37 +12,63 @@ const { successResponse, errorResponse } = require('../utils/apiResponse');
 
 const getAnalytics = async (req, res) => {
   try {
+    const { department } = req.user;
     const { days = 30 } = req.query;
+
+    // Convert to ObjectId for Aggregation pipelines
+    const deptId = department ? new mongoose.Types.ObjectId(department) : null;
+    const filter = deptId ? { department: deptId } : {};
+    const reminderFilter = deptId ? { 'targetAudience.department': deptId } : {};
+    
     const since = new Date(Date.now() - parseInt(days) * 24 * 60 * 60 * 1000);
 
-    const [totalUsers, totalReminders, userGrowth, remindersByPriority, remindersByCategory, notificationReadRate, topActiveTeachers, activityByDay, studentActivityByClass, assignmentStatsByClass] = await Promise.all([
-      User.countDocuments({ isActive: true }),
-      Reminder.countDocuments(),
+    const [totalUsers, totalReminders, totalStudents, totalTeachers, userGrowth, remindersByPriority, remindersByCategory, noticeReadRates, topActiveTeachers, activityByDay, studentActivityByClass, assignmentStatsByClass] = await Promise.all([
+      User.countDocuments({ ...filter, isActive: true }),
+      Reminder.countDocuments(reminderFilter),
+      User.countDocuments({ ...filter, role: 'student', isActive: true }),
+      User.countDocuments({ ...filter, role: 'teacher', isActive: true }),
       User.aggregate([
-        { $match: { createdAt: { $gte: since } } },
+        { $match: { ...filter, createdAt: { $gte: since } } },
         { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, count: { $sum: 1 } } },
         { $sort: { _id: 1 } },
       ]),
       Reminder.aggregate([
+        { $match: reminderFilter },
         { $group: { _id: '$priority', count: { $sum: 1 } } },
       ]),
       Reminder.aggregate([
+        { $match: reminderFilter },
         { $group: { _id: '$category', count: { $sum: 1 } } },
       ]),
+      // For notice read rate breakdown by category
       Notification.aggregate([
-        { $group: { _id: '$readStatus', count: { $sum: 1 } } },
-      ]),
-      ActivityLog.aggregate([
-        { $match: { action: 'CREATE_REMINDER', createdAt: { $gte: since } } },
-        { $group: { _id: '$userId', count: { $sum: 1 } } },
-        { $sort: { count: -1 } },
-        { $limit: 5 },
-        { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'user' } },
+        { $lookup: { from: 'reminders', localField: 'reminderId', foreignField: '_id', as: 'reminder' } },
+        { $unwind: '$reminder' },
+        { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'user' } },
         { $unwind: '$user' },
-        { $project: { name: '$user.name', email: '$user.email', count: 1 } },
+        { $match: deptId ? { 'user.department': deptId } : {} },
+        { $group: { 
+            _id: '$reminder.category', 
+            total: { $sum: 1 }, 
+            read: { $sum: { $cond: [{ $eq: ['$readStatus', true] }, 1, 0] } } 
+        }},
+        { $project: { category: '$_id', total: 1, read: 1, readRate: { $cond: [{ $gt: ['$total', 0] }, { $round: [{ $multiply: [{ $divide: ['$read', '$total'] }, 100] }, 0] }, 0] } } }
+      ]),
+      // Improved Top Teachers (counting both reminders and assignments)
+      ActivityLog.aggregate([
+        { $match: { action: { $in: ['CREATE_REMINDER', 'CREATE_ASSIGNMENT'] }, createdAt: { $gte: since } } },
+        { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'user' } },
+        { $unwind: '$user' },
+        { $match: { ...filter } },
+        { $group: { _id: '$userId', count: { $sum: 1 }, name: { $first: '$user.name' }, email: { $first: '$user.email' } } },
+        { $sort: { count: -1 } },
+        { $limit: 5 }
       ]),
       ActivityLog.aggregate([
         { $match: { createdAt: { $gte: since } } },
+        { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'user' } },
+        { $unwind: '$user' },
+        { $match: { ...filter } },
         { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, count: { $sum: 1 } } },
         { $sort: { _id: 1 } },
       ]),
@@ -49,7 +76,7 @@ const getAnalytics = async (req, res) => {
         { $match: { createdAt: { $gte: since } } },
         { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'user' } },
         { $unwind: '$user' },
-        { $match: { 'user.role': 'student' } },
+        { $match: { 'user.role': 'student', ...filter } },
         { $group: { _id: '$user.className', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
       ]),
@@ -57,6 +84,7 @@ const getAnalytics = async (req, res) => {
         { $unwind: { path: '$completedBy', preserveNullAndEmptyArrays: false } },
         { $lookup: { from: 'users', localField: 'completedBy.userId', foreignField: '_id', as: 'student' } },
         { $unwind: '$student' },
+        { $match: deptId ? { 'student.department': deptId } : {} },
         { $group: {
             _id: '$student.className',
             submitted: { $sum: 1 },
@@ -65,18 +93,23 @@ const getAnalytics = async (req, res) => {
       ]),
     ]);
 
-    // Calculate notice read rates as a simple percentage array for the frontend
-    const totalN = notificationReadRate.reduce((acc, curr) => acc + curr.count, 0);
-    const readN = notificationReadRate.find(n => n._id === true)?.count || 0;
-    const globalReadRate = totalN > 0 ? Math.round((readN / totalN) * 100) : 0;
+    // Calculate GLOBAL read rate for the dashboard
+    const totalNotifications = noticeReadRates.reduce((acc, curr) => acc + (curr.total || 0), 0);
+    const totalRead = noticeReadRates.reduce((acc, curr) => acc + (curr.read || 0), 0);
+    const globalReadRate = totalNotifications > 0 ? Math.round((totalRead / totalNotifications) * 100) : 0;
 
     return successResponse(res, {
-      totalUsers,
-      totalReminders,
+      globalStats: {
+        totalUsers,
+        totalReminders,
+        totalStudents,
+        totalTeachers,
+        readRate: globalReadRate,
+      },
       userGrowth,
       remindersByPriority,
       remindersByCategory,
-      noticeReadRates: [{ _id: 'Department Overall', readRate: globalReadRate }],
+      noticeReadRates, // Keeps the category breakdown for the charts
       topTeachers: topActiveTeachers,
       activityByDay,
       studentActivityByClass,
@@ -89,32 +122,42 @@ const getAnalytics = async (req, res) => {
 
 const getClassAssignmentDetail = async (req, res) => {
   try {
+    const { department } = req.user;
     const { className } = req.params;
+    const deptId = department ? new mongoose.Types.ObjectId(department) : null;
 
-    // 1. Get all assignments targeting this class
+    if (!deptId) return errorResponse(res, 'Department context required', 400);
+
+    // 1. Get all assignments targeting this class AND this department
     const assignments = await Assignment.find({
+      'targetAudience.department': deptId,
       $or: [
         { 'targetAudience.type': 'all' },
+        { 'targetAudience.type': 'department' },
         { 'targetAudience.type': 'class', 'targetAudience.className': className }
       ]
     }).select('title dueDate createdBy').populate('createdBy', 'name');
 
-    // 2. Get all students in this class
-    const students = await User.find({ role: 'student', className, isActive: true }).select('name email rollNumber');
+    // 2. Get all students in this class and department
+    const students = await User.find({ role: 'student', department: deptId, className, isActive: true }).select('name email rollNumber');
 
     // 3. For each student, calculate their stats across these assignments
     const studentStats = await Promise.all(students.map(async (student) => {
       const studentSubmissions = await Assignment.find({
+        'targetAudience.department': deptId,
         $or: [
           { 'targetAudience.type': 'all' },
+          { 'targetAudience.type': 'department' },
           { 'targetAudience.type': 'class', 'targetAudience.className': className }
         ],
         'completedBy.userId': student._id
       }).select('_id');
 
       const studentApprovals = await Assignment.find({
+        'targetAudience.department': deptId,
         $or: [
           { 'targetAudience.type': 'all' },
+          { 'targetAudience.type': 'department' },
           { 'targetAudience.type': 'class', 'targetAudience.className': className }
         ],
         completedBy: {
@@ -157,12 +200,12 @@ const getStudentDetail = async (req, res) => {
     const readNotifications = await Notification.countDocuments({ userId: id, readStatus: true });
 
     // 2. Assignments
-    // Get all assignments for this student's class
     const assignments = await Assignment.find({
+      'targetAudience.department': student.department?._id,
       $or: [
         { 'targetAudience.type': 'all' },
-        { 'targetAudience.type': 'class', 'targetAudience.className': student.className },
-        { 'targetAudience.type': 'department', 'targetAudience.departmentId': student.department?._id }
+        { 'targetAudience.type': 'department' },
+        { 'targetAudience.type': 'class', 'targetAudience.className': student.className }
       ]
     }).populate('createdBy', 'name').sort({ dueDate: 1 });
 
@@ -199,22 +242,15 @@ const getTeacherDetail = async (req, res) => {
     const teacher = await User.findById(id).populate('department', 'name code');
     if (!teacher) return errorResponse(res, 'Teacher not found', 404);
 
-    // 1. Reminders sent by this teacher
     const reminders = await Reminder.find({ createdBy: id }).sort({ createdAt: -1 });
-
-    // 2. Assignments posted by this teacher
     const assignments = await Assignment.find({ createdBy: id }).sort({ createdAt: -1 });
 
-    // 3. Overall Student Impact
-    // For all assignments this teacher posted, how many students were targeted and how many submitted?
     let totalTargetedStudents = 0;
     let totalSubmissions = 0;
 
     const assignmentDetails = await Promise.all(assignments.map(async (a) => {
-      // Find students targeted by this assignment
-      const filter = { role: 'student', isActive: true };
+      const filter = { role: 'student', isActive: true, department: teacher.department?._id };
       if (a.targetAudience.type === 'class') filter.className = a.targetAudience.className;
-      if (a.targetAudience.type === 'department') filter.department = a.targetAudience.departmentId;
       
       const targetedCount = await User.countDocuments(filter);
       const submissionCount = a.completedBy.length;
@@ -251,4 +287,50 @@ const getTeacherDetail = async (req, res) => {
   }
 };
 
-module.exports = { getAnalytics, getClassAssignmentDetail, getStudentDetail, getTeacherDetail };
+const getClasses = async (req, res) => {
+  try {
+    const { department } = req.user;
+    const deptId = department ? new mongoose.Types.ObjectId(department) : null;
+    const filter = deptId ? { department: deptId, role: 'student', isActive: true } : { role: 'student', isActive: true };
+
+    const classes = await User.aggregate([
+      { $match: filter },
+      { $group: { _id: '$className' } },
+      { $match: { _id: { $ne: null } } },
+      { $sort: { _id: 1 } },
+      { $project: { name: '$_id' } }
+    ]);
+
+    return successResponse(res, classes, 'Classes retrieved');
+  } catch (error) {
+    return errorResponse(res, error.message, 500);
+  }
+};
+
+const getUserStats = async (req, res) => {
+  try {
+    const { department } = req.user;
+    const deptId = department ? new mongoose.Types.ObjectId(department) : null;
+    const filter = deptId ? { department: deptId, isActive: true } : { isActive: true };
+
+    const [totalTeachers, totalStudents, classStats] = await Promise.all([
+      User.countDocuments({ ...filter, role: 'teacher' }),
+      User.countDocuments({ ...filter, role: 'student' }),
+      User.aggregate([
+        { $match: { ...filter, role: 'student' } },
+        { $group: { _id: '$className', count: { $sum: 1 } } },
+        { $sort: { _id: 1 } }
+      ])
+    ]);
+
+    return successResponse(res, {
+      totalTeachers,
+      totalStudents,
+      classStats: classStats.map(c => ({ className: c._id || 'Unassigned', count: c.count }))
+    }, 'User statistics retrieved');
+  } catch (error) {
+    return errorResponse(res, error.message, 500);
+  }
+};
+
+module.exports = { getAnalytics, getClassAssignmentDetail, getStudentDetail, getTeacherDetail, getClasses, getUserStats };

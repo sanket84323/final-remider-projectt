@@ -20,6 +20,10 @@ class TeacherProfileScreen extends ConsumerWidget {
             SliverAppBar(
               expandedHeight: 200,
               pinned: true,
+              leading: (context.canPop() == true) ? IconButton(
+                icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                onPressed: () => context.pop(),
+              ) : null,
               flexibleSpace: FlexibleSpaceBar(
                 background: Container(
                   decoration: const BoxDecoration(gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF004D40), Color(0xFF00897B)])),

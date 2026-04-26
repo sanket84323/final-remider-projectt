@@ -239,7 +239,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           children: [
                             const Icon(Icons.info_outline, color: AppColors.primary, size: 16),
                             const SizedBox(width: 8),
-                            Expanded(child: Text('Optional: Add your class details for personalized notifications', style: TextStyle(fontSize: 12, color: AppColors.primary.withOpacity(0.8), fontFamily: 'Inter'))),
+                            Expanded(child: Text('Mandatory: Please add your class details to complete registration', style: TextStyle(fontSize: 12, color: AppColors.primary.withOpacity(0.8), fontFamily: 'Inter'))),
                           ],
                         ),
                       ),
@@ -256,6 +256,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                               ),
                               items: _classOptions.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
                               onChanged: (val) => setState(() => _selectedClassDropdown = val),
+                              validator: (v) => v == null ? 'Class is required' : null,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -266,6 +267,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                 labelText: 'Department',
                                 hintText: 'AIDS',
                               ),
+                              validator: (v) => v == null || v.isEmpty ? 'Required' : null,
                             ),
                           ),
                         ],
@@ -289,6 +291,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           prefixIcon: Icon(Icons.badge_outlined),
                           hintText: 'e.g. CS21001',
                         ),
+                        validator: (v) => v == null || v.isEmpty ? 'Roll Number is required' : null,
                       ),
                     ],
 

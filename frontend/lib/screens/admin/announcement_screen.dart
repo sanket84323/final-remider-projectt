@@ -5,7 +5,8 @@ import '../../core/constants/app_constants.dart';
 import '../../data/repositories/repositories.dart';
 
 class AnnouncementScreen extends ConsumerStatefulWidget {
-  const AnnouncementScreen({super.key});
+  final String? reminderId;
+  const AnnouncementScreen({super.key, this.reminderId});
   @override
   ConsumerState<AnnouncementScreen> createState() => _AnnouncementScreenState();
 }
@@ -16,22 +17,59 @@ class _AnnouncementScreenState extends ConsumerState<AnnouncementScreen> {
   final _descCtrl = TextEditingController();
   String _priority = 'important';
   bool _isLoading = false;
+  bool _isEditing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.reminderId != null) {
+      _isEditing = true;
+      _loadExistingAnnouncement();
+    }
+  }
+
+  Future<void> _loadExistingAnnouncement() async {
+    setState(() => _isLoading = true);
+    try {
+      final reminder = await ReminderRepository().getReminderById(widget.reminderId!);
+      _titleCtrl.text = reminder.title;
+      _descCtrl.text = reminder.description;
+      setState(() => _priority = reminder.priority);
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error loading announcement: $e'), backgroundColor: AppColors.error));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   Future<void> _sendAnnouncement() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     try {
-      await ReminderRepository().createReminder({
+      final data = {
         'title': _titleCtrl.text.trim(),
         'description': _descCtrl.text.trim(),
         'priority': _priority,
         'category': 'announcement',
         'targetAudience': {'type': 'all'},
-      });
+      };
+
+      if (_isEditing) {
+        await ReminderRepository().updateReminder(widget.reminderId!, data);
+      } else {
+        await ReminderRepository().createReminder(data);
+      }
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('📢 Announcement sent to all students!'), backgroundColor: AppColors.success));
-        _titleCtrl.clear();
-        _descCtrl.clear();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(_isEditing ? '📢 Announcement updated successfully!' : '📢 Announcement sent to all students!'),
+          backgroundColor: AppColors.success,
+        ));
+        if (_isEditing) context.pop();
+        else {
+          _titleCtrl.clear();
+          _descCtrl.clear();
+        }
       }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error));
@@ -43,7 +81,10 @@ class _AnnouncementScreenState extends ConsumerState<AnnouncementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Send Announcement'), leading: IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => context.pop())),
+      appBar: AppBar(
+        title: Text(_isEditing ? 'Edit Announcement' : 'Send Announcement'), 
+        leading: IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => context.pop())
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -59,7 +100,7 @@ class _AnnouncementScreenState extends ConsumerState<AnnouncementScreen> {
               child: Row(children: [
                 const Icon(Icons.campaign_rounded, color: Color(0xFF7B1FA2), size: 28),
                 const SizedBox(width: 12),
-                Expanded(child: Text('This announcement will be sent to ALL students and teachers across the college.', style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: Colors.grey[700], height: 1.4))),
+                Expanded(child: Text(_isEditing ? 'Editing this announcement will update it for all students across the college.' : 'This announcement will be sent to ALL students and teachers across the college.', style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: Colors.grey[700], height: 1.4))),
               ]),
             ),
             const SizedBox(height: 20),
@@ -99,8 +140,8 @@ class _AnnouncementScreenState extends ConsumerState<AnnouncementScreen> {
             const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: _isLoading ? null : _sendAnnouncement,
-              icon: _isLoading ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Icon(Icons.campaign_rounded),
-              label: const Text('Send College-Wide Announcement'),
+              icon: _isLoading ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : Icon(_isEditing ? Icons.save_rounded : Icons.campaign_rounded),
+              label: Text(_isEditing ? 'Update Announcement' : 'Send College-Wide Announcement'),
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7B1FA2)),
             ),
           ],

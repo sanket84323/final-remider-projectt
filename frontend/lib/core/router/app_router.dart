@@ -11,6 +11,7 @@ import '../../screens/student/student_shell.dart';
 import '../../screens/student/student_dashboard.dart';
 import '../../screens/student/notification_list_screen.dart';
 import '../../screens/student/reminder_detail_screen.dart';
+import '../../screens/student/assignment_submission_screen.dart';
 
 import '../../screens/student/calendar_screen.dart';
 import '../../screens/student/profile_screen.dart';
@@ -24,6 +25,7 @@ import '../../screens/teacher/scheduled_reminders_screen.dart';
 import '../../screens/teacher/read_receipts_screen.dart';
 import '../../screens/teacher/teacher_profile_screen.dart';
 import '../../screens/teacher/teacher_assignment_detail_screen.dart';
+import '../../screens/teacher/manage_posts_screen.dart';
 import '../../screens/admin/admin_dashboard.dart';
 import '../../screens/admin/user_management_screen.dart';
 import '../../screens/admin/department_management_screen.dart';
@@ -35,6 +37,9 @@ import '../../screens/admin/class_students_screen.dart';
 import '../../screens/admin/student_detail_screen.dart';
 import '../../screens/shared/assignment_detail_screen.dart';
 import '../../screens/admin/teacher_detail_screen.dart';
+import '../../screens/admin/manage_announcements_screen.dart';
+import '../../screens/admin/manage_assignments_screen.dart';
+import '../../screens/admin/engagement_screen.dart';
 
 final _rootNavigatorKey    = GlobalKey<NavigatorState>();
 final _studentTab0NavKey   = GlobalKey<NavigatorState>();
@@ -130,7 +135,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               builder: (_, __) => const StudentDashboard(),
               routes: [
                 GoRoute(path: 'reminder/:id',   builder: (_, s) => ReminderDetailScreen(reminderId: s.pathParameters['id']!)),
-                GoRoute(path: 'assignment/:id', builder: (_, s) => AssignmentDetailScreen(assignmentId: s.pathParameters['id']!)),
+                GoRoute(path: 'assignment/:id', builder: (_, s) => AssignmentSubmissionScreen(assignmentId: s.pathParameters['id']!)),
                 GoRoute(path: 'assignments',     builder: (_, __) => const StudentAssignmentScreen()),
                 GoRoute(path: 'settings',       builder: (_, __) => const SettingsScreen()),
               ],
@@ -197,9 +202,27 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, s) => ReadReceiptsScreen(reminderId: s.pathParameters['id']!),
       ),
       GoRoute(
+        path: '/teacher-manage-all',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const ManagePostsScreen(),
+      ),
+      GoRoute(
+        path: '/teacher-edit-reminder/:id',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, s) => CreateReminderScreen(reminderId: s.pathParameters['id']),
+      ),
+      GoRoute(
+        path: '/teacher-edit-assignment/:id',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, s) => CreateAssignmentScreen(assignmentId: s.pathParameters['id']),
+      ),
+      GoRoute(
         path: '/admin-class-analytics/:className',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (_, s) => ClassAssignmentDetailScreen(className: s.pathParameters['className']!),
+        builder: (_, s) => ClassAssignmentDetailScreen(
+          className: s.pathParameters['className']!,
+          initialTab: s.uri.queryParameters['tab'],
+        ),
       ),
       GoRoute(
         path: '/admin-classes',
@@ -219,7 +242,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/assignment-detail/:id',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (_, s) => AssignmentDetailScreen(assignmentId: s.pathParameters['id']!),
+        builder: (context, s) {
+          // If the logged in user is a student, show the submission screen
+          final auth = ref.read(authStateProvider);
+          if (auth.valueOrNull?.role == 'student') {
+            return AssignmentSubmissionScreen(assignmentId: s.pathParameters['id']!);
+          }
+          return AssignmentDetailScreen(assignmentId: s.pathParameters['id']!);
+        },
       ),
       GoRoute(
         path: '/admin-teacher-analytics/:id',
@@ -246,7 +276,22 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/admin-announce',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (_, __) => const AnnouncementScreen(),
+        builder: (_, s) => AnnouncementScreen(reminderId: s.uri.queryParameters['id']),
+      ),
+      GoRoute(
+        path: '/admin-manage-announcements',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const ManageAnnouncementsScreen(),
+      ),
+      GoRoute(
+        path: '/admin-manage-assignments',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const ManageAssignmentsScreen(),
+      ),
+      GoRoute(
+        path: '/admin-engagement',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const EngagementScreen(),
       ),
     ],
   );

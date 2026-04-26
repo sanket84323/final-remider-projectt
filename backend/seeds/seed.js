@@ -39,25 +39,26 @@ const seed = async () => {
   const hod = await User.create({
     name: 'Dr. Bhagyshree Dhakulkar',
     email: 'hod@aids.edu',
-    passwordHash: hash('Hod@123'),
+    passwordHash: 'Hod@123',
     role: 'admin',
     department: csDept._id,
   });
 
   // ─── Teachers ──────────────────────────────────────────────────────────────
-  const teacherPwHash = hash('Teacher@123');
-  const [teacher1, teacher2] = await User.insertMany([
-    { name: 'Prof. Amit Verma', email: 'amit@aids.edu', passwordHash: teacherPwHash, role: 'teacher', department: csDept._id },
-    { name: 'Prof. Sarika Patil', email: 'sarika@aids.edu', passwordHash: teacherPwHash, role: 'teacher', department: csDept._id },
+  const teacherPw = 'Teacher@123';
+  const [teacher1, teacher2] = await User.create([
+    { name: 'Prof. Amit Verma', email: 'amit@aids.edu', passwordHash: teacherPw, role: 'teacher', department: csDept._id },
+    { name: 'Prof. Sarika Patil', email: 'sarika@aids.edu', passwordHash: teacherPw, role: 'teacher', department: csDept._id },
   ]);
 
   // ─── Students ──────────────────────────────────────────────────────────────
-  const studentPwHash = hash('Student@123');
-  const students = await User.insertMany([
-    { name: 'Sanket Solanke', email: 'sanket@student.edu', passwordHash: studentPwHash, role: 'student', department: csDept._id, className: 'AIDS TE A', section: 'A', rollNumber: 'TE001' },
-    { name: 'Aditya Mane', email: 'aditya@student.edu', passwordHash: studentPwHash, role: 'student', department: csDept._id, className: 'AIDS TE A', section: 'A', rollNumber: 'TE002' },
-    { name: 'Neha Deshmukh', email: 'neha@student.edu', passwordHash: studentPwHash, role: 'student', department: csDept._id, className: 'AIDS TE B', section: 'B', rollNumber: 'TE050' },
+  const studentPw = 'Student@123';
+  const students = await User.create([
+    { name: 'Sanket Solanke', email: 'sanket@student.edu', passwordHash: studentPw, role: 'student', department: csDept._id, className: 'AIDS TE A', section: 'A', rollNumber: 'TE001' },
+    { name: 'Aditya Mane', email: 'aditya@student.edu', passwordHash: studentPw, role: 'student', department: csDept._id, className: 'AIDS TE A', section: 'A', rollNumber: 'TE002' },
+    { name: 'Neha Deshmukh', email: 'neha@student.edu', passwordHash: studentPw, role: 'student', department: csDept._id, className: 'AIDS TE B', section: 'B', rollNumber: 'TE050' },
   ]);
+
 
   // ─── Classes ─────────────────────────────────────────────────────────────────
   await Class.create({
@@ -91,8 +92,10 @@ const seed = async () => {
   ]);
 
   // Create notifications for all students
-  for (const reminder of reminders) {
-    for (const student of students) {
+  for (const [idx, reminder] of reminders.entries()) {
+    for (const [sIdx, student] of students.entries()) {
+      // Mark some as read for variety
+      const isRead = (idx + sIdx) % 2 === 0;
       await Notification.create({
         userId: student._id,
         reminderId: reminder._id,
@@ -100,7 +103,9 @@ const seed = async () => {
         body: reminder.description,
         type: reminder.category,
         priority: reminder.priority,
-        deliveredAt: now
+        deliveredAt: now,
+        readStatus: isRead,
+        readAt: isRead ? now : null
       });
     }
   }

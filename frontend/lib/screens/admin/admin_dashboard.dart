@@ -122,68 +122,84 @@ class _AdminDashContent extends StatelessWidget {
           child: Container(
             constraints: const BoxConstraints(maxWidth: 1200),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              // ─── KPI Grid ───────────────────────────────────────────────────────
+              const SizedBox(height: 32),
+
+              // ─── Announcements Card (Clickable) ──────────────────────────────
               Padding(
-                padding: const EdgeInsets.all(AppDimens.paddingMd),
-                child: GridView.count(
-                  crossAxisCount: kpiCrossCount,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: kpiRatio,
-                  children: [
-                    _KpiCard(icon: Icons.people_rounded, label: 'Total Users', value: '${stats['totalUsers'] ?? 0}', color: const Color(0xFF7B1FA2)),
-                    _KpiCard(icon: Icons.school_rounded, label: 'Students', value: '${stats['totalStudents'] ?? 0}', color: AppColors.primary),
-                    _KpiCard(icon: Icons.notifications_rounded, label: 'Reminders Sent', value: '${stats['totalReminders'] ?? 0}', color: const Color(0xFF00897B)),
-                    _KpiCard(icon: Icons.assignment_rounded, label: 'Assignments', value: '${stats['totalAssignments'] ?? 0}', color: AppColors.accent),
-                  ],
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: InkWell(
+                  onTap: () => context.push('/admin-manage-announcements'),
+                  borderRadius: BorderRadius.circular(28),
+                  child: Container(
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF00897B), Color(0xFF00695C)],
+                      ),
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [BoxShadow(color: const Color(0xFF00897B).withOpacity(0.3), blurRadius: 25, offset: const Offset(0, 12))],
+                    ),
+                    child: Row(children: [
+                      Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(22)),
+                        child: const Icon(Icons.campaign_rounded, color: Colors.white, size: 36),
+                      ),
+                      const SizedBox(width: 24),
+                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        const Text('COMMUNICATION CENTER', style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+                        const SizedBox(height: 6),
+                        Text('${stats['globalStats']?['totalReminders'] ?? 0} Active Broadcasts', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800, fontFamily: 'Inter')),
+                      ])),
+                      const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 18),
+                    ]),
+                  ),
                 ),
               ),
 
-              // ─── Read Rate Card ──────────────────────────────────────────────────
+              const SizedBox(height: 32),
+
+              // ─── Overall Engagement (Non-Clickable) ──────────────────────────
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(32),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [Color(0xFF1E88E5), Color(0xFF1976D2)],
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(32),
+                    border: Border.all(color: Colors.black.withOpacity(0.04)),
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.015), blurRadius: 20, offset: const Offset(0, 10))],
+                  ),
+                  child: Column(children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(color: const Color(0xFF673AB7).withOpacity(0.08), shape: BoxShape.circle),
+                      child: const Icon(Icons.auto_graph_rounded, color: Color(0xFF673AB7), size: 32),
                     ),
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(color: const Color(0xFF1976D2).withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6)),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(16)),
-                        child: const Icon(Icons.analytics_rounded, color: Colors.white, size: 28),
+                    const SizedBox(height: 20),
+                    const Text('DEPARTMENT READ RATE', style: TextStyle(color: Colors.black38, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${stats['globalStats']?['readRate'] ?? 0}%', 
+                      style: const TextStyle(color: Color(0xFF1A237E), fontSize: 56, fontWeight: FontWeight.w900, fontFamily: 'Inter', letterSpacing: -2)
+                    ),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Text(
+                        _getEngagementMessage(stats['globalStats']?['readRate'] ?? 0),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.black.withOpacity(0.5), fontSize: 13, fontWeight: FontWeight.w500, height: 1.4)
                       ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start, 
-                        children: [
-                          const Text('Engagement Rate', style: TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Inter', fontWeight: FontWeight.w600, letterSpacing: 0.5)),
-                          const SizedBox(height: 4),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.baseline,
-                            textBaseline: TextBaseline.alphabetic,
-                            children: [
-                              Text('$readRate', style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w800, fontFamily: 'Inter')),
-                              const Text('%', style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Inter')),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                    ),
+                  ]),
                 ),
               ),
+
+              const SizedBox(height: 32),
 
               // ─── Quick Actions ───────────────────────────────────────────────────
               const Padding(padding: EdgeInsets.fromLTRB(16, 20, 16, 8), child: Text('Quick Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Inter'))),
@@ -219,40 +235,45 @@ class _KpiCard extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
-  const _KpiCard({required this.icon, required this.label, required this.value, required this.color});
+  final VoidCallback onTap;
+  const _KpiCard({required this.icon, required this.label, required this.value, required this.color, required this.onTap});
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: color.withOpacity(0.1)),
-      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
-    ),
-    child: Row(
-      children: [
-        Flexible(
-          flex: 2,
-          child: Container(
-            padding: const EdgeInsets.all(8), 
-            decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)), 
-            child: FittedBox(child: Icon(icon, color: color, size: 42)),
+  Widget build(BuildContext context) => InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(16),
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.1)),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+      ),
+      child: Row(
+        children: [
+          Flexible(
+            flex: 2,
+            child: Container(
+              padding: const EdgeInsets.all(8), 
+              decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)), 
+              child: FittedBox(child: Icon(icon, color: color, size: 42)),
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          flex: 3,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start, 
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              FittedBox(fit: BoxFit.scaleDown, child: Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: color, fontFamily: 'Inter', letterSpacing: -1.0))),
-              FittedBox(fit: BoxFit.scaleDown, child: Text(label, style: TextStyle(fontSize: 11, color: Colors.black.withOpacity(0.6), fontFamily: 'Inter', fontWeight: FontWeight.w800, letterSpacing: 0.1))),
-            ],
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start, 
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                FittedBox(fit: BoxFit.scaleDown, child: Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: color, fontFamily: 'Inter', letterSpacing: -1.0))),
+                FittedBox(fit: BoxFit.scaleDown, child: Text(label, style: TextStyle(fontSize: 11, color: Colors.black.withOpacity(0.6), fontFamily: 'Inter', fontWeight: FontWeight.w800, letterSpacing: 0.1))),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     ),
   );
 }
@@ -316,4 +337,27 @@ class _ActivityTile extends StatelessWidget {
       subtitle: Text(user?['name'] ?? 'Unknown', style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textHint)),
     );
   }
+}
+
+class _InsightStat extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+  final IconData icon;
+  const _InsightStat({required this.label, required this.value, required this.color, required this.icon});
+
+  @override
+  Widget build(BuildContext context) => Column(children: [
+    Icon(icon, color: color, size: 20),
+    const SizedBox(height: 8),
+    Text(value, style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.w900, fontFamily: 'Inter')),
+    Text(label.toUpperCase(), style: TextStyle(color: Colors.black26, fontSize: 8, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+  ]);
+}
+
+String _getEngagementMessage(int rate) {
+  if (rate <= 30) return 'Communication needs attention. Try sending reminders for important notices.';
+  if (rate <= 60) return 'Steady engagement. Your announcements are reaching a good portion of students.';
+  if (rate <= 85) return 'Great job! The department is highly responsive to your broadcasts.';
+  return 'Outstanding! Your communication strategy is world-class.';
 }

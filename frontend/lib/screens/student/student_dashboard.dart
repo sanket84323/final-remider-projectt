@@ -29,9 +29,23 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
     {'id': 'timetable', 'label': 'Timetable', 'icon': Icons.calendar_today_outlined},
   ];
 
+  Timer? _refreshTimer;
+  
   @override
   void initState() {
     super.initState();
+    // Auto refresh every 30 seconds
+    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      if (mounted) {
+        ref.invalidate(studentDashboardProvider);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
   }
 
   void _toggleSelectionMode() {

@@ -12,7 +12,8 @@ const PDFDocument = require('pdfkit');
 
 const createAssignment = async (req, res) => {
   try {
-    const { title, description, subject, dueDate, targetAudience, maxMarks } = req.body;
+    const { title, description, subject, dueDate, targetAudience, maxMarks, shouldNotify = true } = req.body;
+    
     const assignment = await Assignment.create({
       title, description, subject,
       dueDate: new Date(dueDate),
@@ -20,16 +21,31 @@ const createAssignment = async (req, res) => {
       maxMarks: maxMarks || 100,
       createdBy: req.user._id,
     });
-    const userFilter = { role: 'student', isActive: true };
-    if (targetAudience?.className) userFilter.className = targetAudience.className;
-    const targetUsers = await User.find(userFilter).select('_id fcmToken').lean();
-    await notificationService.notifyUsers({
-      users: targetUsers,
-      title: `New Assignment: ${title}`,
-      body: `Due: ${new Date(dueDate).toLocaleDateString()}`,
-      type: 'assignment', assignmentId: assignment._id, priority: 'important',
-      data: { assignmentId: assignment._id.toString(), type: 'assignment' },
-    });
+
+    if (shouldNotify) {
+      const userFilter = { role: 'student', isActive: true };
+      if (targetAudience?.type === 'class') {
+        if (targetAudience.classNames && targetAudience.classNames.length > 0) {
+          userFilter.className = { $in: targetAudience.classNames };
+        } else if (targetAudience.className) {
+          userFilter.className = targetAudience.className;
+        }
+      } else if (targetAudience?.type === 'department') {
+        userFilter.department = targetAudience.department;
+      }
+
+      const targetUsers = await User.find(userFilter).select('_id fcmToken').lean();
+      if (targetUsers.length > 0) {
+        await notificationService.notifyUsers({
+          users: targetUsers,
+          title: `New Assignment: ${title}`,
+          body: `Due: ${new Date(dueDate).toLocaleDateString()}`,
+          type: 'assignment', assignmentId: assignment._id, priority: 'important',
+          data: { assignmentId: assignment._id.toString(), type: 'assignment' },
+        });
+      }
+    }
+
     await ActivityLog.create({ userId: req.user._id, action: 'CREATE_ASSIGNMENT', metadata: { assignmentId: assignment._id } });
     await assignment.populate('createdBy', 'name email');
     return successResponse(res, assignment, 'Assignment created', 201);
@@ -47,6 +63,7 @@ const getAssignments = async (req, res) => {
       filter.$or = [
         { 'targetAudience.type': 'all' },
         { 'targetAudience.type': 'class', 'targetAudience.className': user.className },
+        { 'targetAudience.type': 'class', 'targetAudience.classNames': user.className },
         { 'targetAudience.type': 'department', 'targetAudience.department': user.department },
       ];
     } else if (user.role === 'teacher') {
@@ -103,7 +120,11 @@ const getAssignmentById = async (req, res) => {
     if (req.user.role === 'teacher' || req.user.role === 'admin') {
       const studentFilter = { role: 'student', isActive: true };
       if (assignment.targetAudience.type === 'class') {
-        studentFilter.className = assignment.targetAudience.className;
+        if (assignment.targetAudience.classNames && assignment.targetAudience.classNames.length > 0) {
+          studentFilter.className = { $in: assignment.targetAudience.classNames };
+        } else {
+          studentFilter.className = assignment.targetAudience.className;
+        }
       } else if (assignment.targetAudience.type === 'department') {
         studentFilter.department = assignment.targetAudience.department;
       }
