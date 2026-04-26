@@ -116,7 +116,7 @@ class _AdminDashContent extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 1.7,
+          childAspectRatio: 2.8,
           children: [
             _KpiCard(icon: Icons.people_rounded, label: 'Total Users', value: '${stats['totalUsers'] ?? 0}', color: const Color(0xFF7B1FA2)),
             _KpiCard(icon: Icons.school_rounded, label: 'Students', value: '${stats['totalStudents'] ?? 0}', color: AppColors.primary),
@@ -130,7 +130,7 @@ class _AdminDashContent extends StatelessWidget {
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.centerLeft,
@@ -149,7 +149,7 @@ class _AdminDashContent extends StatelessWidget {
                 decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(16)),
                 child: const Icon(Icons.analytics_rounded, color: Colors.white, size: 28),
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start, 
                 children: [
@@ -180,7 +180,7 @@ class _AdminDashContent extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 2.5,
+          childAspectRatio: 3.5,
           children: [
             _ActionBtn(icon: Icons.manage_accounts_rounded, label: 'Management', color: AppColors.primary, onTap: () => context.push('/admin-users')),
             _ActionBtn(icon: Icons.campaign_rounded, label: 'Announce', color: const Color(0xFF7B1FA2), onTap: () => context.push('/admin-announce')),
@@ -204,19 +204,19 @@ class _KpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(12),
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
     decoration: BoxDecoration(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: color.withOpacity(0.08)),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: color.withOpacity(0.05)),
       boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
     ),
     child: Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(10), 
-          decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(12)), 
-          child: Icon(icon, color: color, size: 28)
+          padding: const EdgeInsets.all(6), 
+          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), 
+          child: Icon(icon, color: color, size: 24)
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -224,8 +224,8 @@ class _KpiCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start, 
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: color, fontFamily: 'Inter', letterSpacing: -0.5)),
-              Text(label, style: TextStyle(fontSize: 10, color: Colors.black.withOpacity(0.5), fontFamily: 'Inter', fontWeight: FontWeight.w700, letterSpacing: 0.2)),
+              Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: color, fontFamily: 'Inter', letterSpacing: -0.5)),
+              Text(label, style: TextStyle(fontSize: 9, color: Colors.black.withOpacity(0.5), fontFamily: 'Inter', fontWeight: FontWeight.w700, letterSpacing: 0.1)),
             ],
           ),
         ),
@@ -247,19 +247,19 @@ class _ActionBtn extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(18),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
           color: Colors.white, 
-          borderRadius: BorderRadius.circular(16), 
-          border: Border.all(color: color.withOpacity(0.08)),
-          boxShadow: [BoxShadow(color: color.withOpacity(0.03), blurRadius: 6, offset: const Offset(0, 2))],
+          borderRadius: BorderRadius.circular(14), 
+          border: Border.all(color: color.withOpacity(0.06)),
+          boxShadow: [BoxShadow(color: color.withOpacity(0.02), blurRadius: 4, offset: const Offset(0, 2))],
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
-              child: Icon(icon, color: color, size: 24),
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+              child: Icon(icon, color: color, size: 28),
             ),
             const SizedBox(width: 12),
             Expanded(child: Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: color, fontFamily: 'Inter'))),
